@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "三餐轻盈",
+  "short_name": "三餐轻盈",
+  "description": "记录早餐、午餐和晚餐，用轻盈餐盘法养成可持续的饮食习惯。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F7F3E9",
+  "theme_color": "#F7F3E9",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
