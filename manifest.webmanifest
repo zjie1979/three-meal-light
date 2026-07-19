@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "三餐轻盈",
-  "short_name": "三餐轻盈",
-  "description": "记录早餐、午餐和晚餐，用轻盈餐盘法养成可持续的饮食习惯。",
+  "name": "三餐九选",
+  "short_name": "三餐九选",
+  "description": "自定义9套减脂餐，每天为早餐、午餐和晚餐任选一套并完成记录。",
   "lang": "zh-CN",
   "start_url": "./",
   "scope": "./",
