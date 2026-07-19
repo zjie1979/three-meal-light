@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f3e9" />
+    <meta name="color-scheme" content="light" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="三餐轻盈" />
+    <meta name="description" content="轻松记录早餐、午餐和晚餐，用餐盘法养成可持续的饮食习惯。" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icons/icon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="any" href="./icons/icon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>三餐轻盈</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand" aria-label="三餐轻盈">
+          <span class="brand-mark" aria-hidden="true">
+            <span class="brand-leaf"></span>
+          </span>
+          <div>
+            <strong>三餐轻盈</strong>
+            <span>好好吃饭，也能慢慢变轻</span>
+          </div>
+        </div>
+        <button class="icon-button" id="installButton" type="button" aria-label="安装到主屏幕" title="安装到主屏幕">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+          </svg>
+        </button>
+      </header>
+
+      <main>
+        <section class="view is-active" id="todayView" data-view="today" aria-label="今日三餐">
+          <div class="date-row">
+            <button class="date-arrow" id="prevDayButton" type="button" aria-label="前一天">‹</button>
+            <button class="date-display" id="dateButton" type="button" aria-label="选择日期">
+              <strong id="dateTitle">今天</strong>
+              <span id="dateSubtitle"></span>
+            </button>
+            <button class="date-arrow" id="nextDayButton" type="button" aria-label="后一天">›</button>
+          </div>
+
+          <section class="hero-card" aria-labelledby="dailyHeadline">
+            <div class="hero-copy">
+              <span class="eyebrow">今天的节奏</span>
+              <h1 id="dailyHeadline">一日三餐，稳稳完成</h1>
+              <p id="dailyMessage">不用饿，也不用追求满分，先把每一餐吃完整。</p>
+              <div class="hero-stats">
+                <span><b id="streakCount">0</b> 天连续完成</span>
+                <span class="stat-divider"></span>
+                <span><b id="balanceCount">0</b> 个均衡选择</span>
+              </div>
+            </div>
+            <div class="progress-ring" id="progressRing" style="--progress: 0" aria-label="今日完成进度">
+              <div>
+                <strong id="doneCount">0</strong>
+                <span>/ 3 餐</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="weight-card" aria-label="晨起体重记录">
+            <div class="weight-icon" aria-hidden="true">↘</div>
+            <div class="weight-copy">
+              <strong>晨起体重 <span>选填，仅保存在本机</span></strong>
+              <p id="weightTrend">记录后可查看趋势</p>
+            </div>
+            <label class="weight-input">
+              <input id="weightInput" type="number" inputmode="decimal" min="20" max="300" step="0.1" placeholder="--" aria-label="体重" />
+              <span>kg</span>
+            </label>
+          </section>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">今日三餐</span>
+              <h2>点开一餐，记下真实吃法</h2>
+            </div>
+            <span class="mini-progress" id="miniProgress">0 / 3</span>
+          </div>
+
+          <div class="meal-list" id="mealList"></div>
+
+          <section class="gentle-note">
+            <span aria-hidden="true">☁</span>
+            <div>
+              <strong>偶尔吃多了，也不用补偿性挨饿</strong>
+              <p>下一餐回到正常份量，多喝水、照常吃，长期节奏比单次完美更重要。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="historyView" data-view="history" aria-label="历史记录">
+          <div class="page-heading">
+            <span class="eyebrow">你的节奏</span>
+            <h1>不是看一天，是看趋势</h1>
+            <p>完成三餐就是很好的开始，均衡选择会慢慢累积。</p>
+          </div>
+
+          <section class="week-card">
+            <div class="week-summary">
+              <div>
+                <span>近 7 天</span>
+                <strong id="weekMeals">0 餐</strong>
+              </div>
+              <div>
+                <span>三餐完成日</span>
+                <strong id="weekPerfectDays">0 天</strong>
+              </div>
+              <div>
+                <span>平均饱腹感</span>
+                <strong id="weekSatiety">--</strong>
+              </div>
+            </div>
+            <div class="week-bars" id="weekBars" aria-label="近七天完成情况"></div>
+          </section>
+
+          <section class="history-section">
+            <div class="section-heading compact">
+              <div>
+                <span class="eyebrow">最近记录</span>
+                <h2>每天都算数</h2>
+              </div>
+            </div>
+            <div class="history-list" id="historyList"></div>
+          </section>
+        </section>
+
+        <section class="view" id="planView" data-view="plan" aria-label="饮食计划设置">
+          <div class="page-heading">
+            <span class="eyebrow">我的计划</span>
+            <h1>把三餐调成你的时间</h1>
+            <p>不规定食谱，用简单餐盘法给每一餐留出弹性。</p>
+          </div>
+
+          <form class="settings-card" id="planForm">
+            <div class="setting-row">
+              <label for="breakfastTime">
+                <span class="setting-emoji breakfast" aria-hidden="true">☀</span>
+                <span><strong>早餐</strong><small>建议含蛋白质和主食</small></span>
+              </label>
+              <input id="breakfastTime" name="breakfast" type="time" value="08:00" />
+            </div>
+            <div class="setting-row">
+              <label for="lunchTime">
+                <span class="setting-emoji lunch" aria-hidden="true">◐</span>
+                <span><strong>午餐</strong><small>半盘菜、一掌肉、一拳饭</small></span>
+              </label>
+              <input id="lunchTime" name="lunch" type="time" value="12:30" />
+            </div>
+            <div class="setting-row">
+              <label for="dinnerTime">
+                <span class="setting-emoji dinner" aria-hidden="true">☾</span>
+                <span><strong>晚餐</strong><small>吃够营养，留一点余地</small></span>
+              </label>
+              <input id="dinnerTime" name="dinner" type="time" value="18:30" />
+            </div>
+            <button class="primary-button" type="submit">保存我的三餐时间</button>
+          </form>
+
+          <section class="method-card">
+            <span class="eyebrow">轻盈餐盘法</span>
+            <h2>每餐记住 3 + 1</h2>
+            <div class="plate-visual" aria-label="半盘蔬菜，四分之一蛋白质，四分之一主食">
+              <div class="plate-half">蔬菜<br /><b>½</b></div>
+              <div class="plate-quarter protein">蛋白质<br /><b>¼</b></div>
+              <div class="plate-quarter staple">主食<br /><b>¼</b></div>
+            </div>
+            <p><b>再加 1：</b>水或无糖饮。早餐可以用水果替代部分蔬菜，不必每餐都长得一样。</p>
+          </section>
+
+          <section class="data-card">
+            <div>
+              <span class="eyebrow">数据与隐私</span>
+              <h2>记录只在当前浏览器</h2>
+              <p>没有账号、没有服务器，不会上传饮食或体重。清除 Safari 网站数据会同时删除记录。</p>
+            </div>
+            <div class="data-actions">
+              <button id="exportButton" class="secondary-button" type="button">导出备份</button>
+              <button id="resetButton" class="text-button danger" type="button">清除全部记录</button>
+            </div>
+          </section>
+
+          <p class="health-disclaimer">本工具用于日常习惯记录，不替代医生或营养师建议。如有孕期、进食障碍、糖尿病或其他需要特殊饮食管理的情况，请遵循专业意见。</p>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="主导航">
+        <button class="nav-item is-active" data-target="today" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4v-9.5Z" /><path d="M9 20v-6h6v6" /></svg>
+          <span>今天</span>
+        </button>
+        <button class="nav-item" data-target="history" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10m7 10V4m7 16v-7" /></svg>
+          <span>记录</span>
+        </button>
+        <button class="nav-item" data-target="plan" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" /></svg>
+          <span>计划</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+
+    <section class="bottom-sheet meal-sheet" id="mealSheet" role="dialog" aria-modal="true" aria-labelledby="mealSheetTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-header">
+        <div>
+          <span class="eyebrow" id="mealSheetEyebrow">记录这一餐</span>
+          <h2 id="mealSheetTitle">早餐</h2>
+        </div>
+        <button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button>
+      </div>
+      <form id="mealForm">
+        <input id="mealKeyInput" type="hidden" />
+        <fieldset>
+          <legend>这餐吃到了哪些？<span>可多选</span></legend>
+          <div class="check-grid" id="checkGrid"></div>
+        </fieldset>
+
+        <label class="field-label" for="foodNote">吃了什么 <span>选填</span></label>
+        <textarea id="foodNote" rows="3" maxlength="160" placeholder="例如：番茄鸡蛋、半碗米饭、炒青菜"></textarea>
+
+        <fieldset>
+          <legend>吃完有多饱？<span>凭感觉就好</span></legend>
+          <div class="satiety-scale" id="satietyScale">
+            <button type="button" data-value="1"><b>1</b><span>还饿</span></button>
+            <button type="button" data-value="2"><b>2</b><span>不太饱</span></button>
+            <button type="button" data-value="3"><b>3</b><span>刚刚好</span></button>
+            <button type="button" data-value="4"><b>4</b><span>有点撑</span></button>
+            <button type="button" data-value="5"><b>5</b><span>很撑</span></button>
+          </div>
+        </fieldset>
+
+        <div class="feedback-box" id="mealFeedback" aria-live="polite">
+          选好后，这里会给你一个简单建议。
+        </div>
+
+        <div class="sheet-actions">
+          <button class="secondary-button" id="saveDraftButton" type="button">先保存</button>
+          <button class="primary-button" id="completeMealButton" type="submit">完成这一餐</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="bottom-sheet install-sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installSheetTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-header">
+        <div>
+          <span class="eyebrow">像普通 App 一样使用</span>
+          <h2 id="installSheetTitle">添加到 iPhone 主屏幕</h2>
+        </div>
+        <button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button>
+      </div>
+      <ol class="install-steps">
+        <li><b>1</b><span>请使用 <strong>Safari</strong> 打开本页面</span></li>
+        <li><b>2</b><span>点 Safari 底部的 <strong>分享</strong> 按钮</span></li>
+        <li><b>3</b><span>向上滑，选择 <strong>添加到主屏幕</strong></span></li>
+        <li><b>4</b><span>点右上角 <strong>添加</strong>，以后直接点图标打开</span></li>
+      </ol>
+      <button class="primary-button" data-close-sheet type="button">我知道了</button>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <canvas id="celebrationCanvas" aria-hidden="true"></canvas>
+
+    <noscript>请开启 JavaScript 后使用三餐轻盈。</noscript>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
