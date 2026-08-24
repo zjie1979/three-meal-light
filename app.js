@@ -2,6 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "three-meal-light-v1";
+  const CUSTOM_PRESET_LIMIT = 12;
   const DEFAULT_TEMPLATES = [
     { id: "meal-1", emoji: "🥔", name: "土豆", foods: "蒸土豆、烤土豆或少油土豆块", tip: "当主食吃，别再叠加太多米饭面条。" },
     { id: "meal-2", emoji: "🥣", name: "无糖酸奶", foods: "无糖酸奶，可以加少量水果或燕麦", tip: "优先选无糖，太甜的酸奶按甜品看。" },
@@ -98,6 +99,7 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const cloneTemplates = () => DEFAULT_TEMPLATES.map((item) => ({ ...item }));
+  const templateSummary = (templates) => templates.slice(0, 3).map((item) => item.name).join("、");
   function clonePreset(templates) {
     return templates.map((item) => ({
       emoji: item.emoji,
@@ -107,8 +109,9 @@
     }));
   }
   const defaultState = () => ({
-    version: 4,
+    version: 5,
     templates: cloneTemplates(),
+    customPresets: [],
     loop: {
       roundsCompleted: 0,
       currentRound: 1,
@@ -131,6 +134,11 @@
     roundsCompleted: $("#roundsCompleted"),
     checkinGrid: $("#checkinGrid"),
     presetGrid: $("#presetGrid"),
+    saveCustomPresetButton: $("#saveCustomPresetButton"),
+    exportTemplatesButton: $("#exportTemplatesButton"),
+    importTemplatesButton: $("#importTemplatesButton"),
+    importTemplatesInput: $("#importTemplatesInput"),
+    myPresetGrid: $("#myPresetGrid"),
     templateGrid: $("#templateGrid"),
     historyList: $("#historyList"),
     statsRounds: $("#statsRounds"),
@@ -149,6 +157,16 @@
     celebrationCanvas: $("#celebrationCanvas")
   };
 
+  function normalizeTemplateItem(item, fallback) {
+    return {
+      id: fallback.id,
+      emoji: String(item?.emoji || fallback.emoji).slice(0, 4),
+      name: String(item?.name || fallback.name).slice(0, 12),
+      foods: String(item?.foods || fallback.foods).slice(0, 80),
+      tip: String(item?.tip || fallback.tip).slice(0, 60)
+    };
+  }
+
   function normalizeTemplates(savedTemplates) {
     return DEFAULT_TEMPLATES.map((fallback, index) => {
       const saved = Array.isArray(savedTemplates)
@@ -156,19 +174,24 @@
         : null;
       const wasLegacyDefault = !saved || LEGACY_DEFAULT_TEMPLATE_NAMES.includes(saved.name);
       const source = wasLegacyDefault ? fallback : { ...fallback, ...saved };
-      return {
-        id: fallback.id,
-        emoji: String(source.emoji || fallback.emoji).slice(0, 4),
-        name: String(source.name || fallback.name).slice(0, 12),
-        foods: String(source.foods || fallback.foods).slice(0, 80),
-        tip: String(source.tip || fallback.tip).slice(0, 60)
-      };
+      return normalizeTemplateItem(source, fallback);
     });
+  }
+
+  function normalizeCustomPresets(savedPresets) {
+    if (!Array.isArray(savedPresets)) return [];
+    return savedPresets.slice(0, CUSTOM_PRESET_LIMIT).map((preset, index) => ({
+      id: String(preset?.id || `custom-${Date.now()}-${index}`).slice(0, 40),
+      name: String(preset?.name || `我的模板${index + 1}`).slice(0, 16),
+      createdAt: preset?.createdAt || new Date().toISOString(),
+      templates: normalizeTemplates(preset?.templates)
+    }));
   }
 
   function migrateLegacy(saved) {
     const next = defaultState();
     next.templates = normalizeTemplates(saved?.templates);
+    next.customPresets = normalizeCustomPresets(saved?.customPresets);
     const doneRecords = [];
     Object.entries(saved?.days || {}).sort().forEach(([date, day]) => {
       Object.values(day?.meals || {}).forEach((record) => {
@@ -185,14 +208,15 @@
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (!saved) return defaultState();
-      if (saved.version === 4 && saved.loop) {
+      if (saved.version >= 4 && saved.loop) {
         const fallback = defaultState();
         const checkedIds = Array.isArray(saved.loop.checkedIds)
           ? saved.loop.checkedIds.filter((id) => DEFAULT_TEMPLATES.some((item) => item.id === id)).slice(0, 9)
           : [];
         return {
-          version: 4,
+          version: 5,
           templates: normalizeTemplates(saved.templates),
+          customPresets: normalizeCustomPresets(saved.customPresets),
           loop: {
             roundsCompleted: Math.max(0, Number(saved.loop.roundsCompleted) || 0),
             currentRound: Math.max(1, Number(saved.loop.currentRound) || fallback.loop.currentRound),
@@ -261,6 +285,7 @@
         <p>${escapeHtml(preset.desc)}</p>
       </button>`).join("");
     $$("[data-apply-preset]", refs.presetGrid).forEach((button) => button.addEventListener("click", () => applyPreset(button.dataset.applyPreset)));
+    renderMyPresets();
 
     refs.templateGrid.innerHTML = state.templates.map((template, index) => `
       <button class="template-card tone-${index + 1}" type="button" data-edit-template="${template.id}" aria-label="编辑第${index + 1}顿 ${escapeHtml(template.name)}">
@@ -270,6 +295,24 @@
         <i class="edit-label">编辑</i>
       </button>`).join("");
     $$("[data-edit-template]", refs.templateGrid).forEach((button) => button.addEventListener("click", () => openEditor(button.dataset.editTemplate)));
+  }
+
+  function renderMyPresets() {
+    refs.myPresetGrid.innerHTML = state.customPresets.length
+      ? state.customPresets.map((preset) => `
+        <article class="my-preset-card">
+          <header>
+            <div><strong>${escapeHtml(preset.name)}</strong><small>${escapeHtml(formatDateTime(preset.createdAt))}</small></div>
+          </header>
+          <p>${escapeHtml(templateSummary(preset.templates))} 等9顿</p>
+          <div class="my-preset-actions">
+            <button class="secondary-button" type="button" data-apply-custom-preset="${preset.id}">套用</button>
+            <button class="text-button danger" type="button" data-delete-custom-preset="${preset.id}">删除</button>
+          </div>
+        </article>`).join("")
+      : '<div class="empty-state">还没有保存自己的模板。<br />先把当前9顿改好，再点“保存当前9顿”。</div>';
+    $$("[data-apply-custom-preset]", refs.myPresetGrid).forEach((button) => button.addEventListener("click", () => applyCustomPreset(button.dataset.applyCustomPreset)));
+    $$("[data-delete-custom-preset]", refs.myPresetGrid).forEach((button) => button.addEventListener("click", () => deleteCustomPreset(button.dataset.deleteCustomPreset)));
   }
 
   function applyPreset(presetId) {
@@ -290,6 +333,48 @@
     saveState();
     renderAll();
     showToast(`已套用：${preset.name}`);
+  }
+
+  function applyTemplates(templates) {
+    state.templates = DEFAULT_TEMPLATES.map((fallback, index) => normalizeTemplateItem(templates[index], fallback));
+  }
+
+  function saveCurrentAsCustomPreset() {
+    const defaultName = `我的9顿 ${new Date().toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}`;
+    const name = window.prompt("给这套9顿起个名字", defaultName);
+    if (name === null) return;
+    const cleanName = name.trim().slice(0, 16) || defaultName;
+    const preset = {
+      id: `custom-${Date.now()}`,
+      name: cleanName,
+      createdAt: new Date().toISOString(),
+      templates: clonePreset(state.templates)
+    };
+    state.customPresets = [preset, ...state.customPresets].slice(0, CUSTOM_PRESET_LIMIT);
+    saveState();
+    renderLibrary();
+    showToast(`已保存：${cleanName}`);
+  }
+
+  function applyCustomPreset(presetId) {
+    const preset = state.customPresets.find((item) => item.id === presetId);
+    if (!preset) return;
+    const message = `确定把9顿替换成「${preset.name}」吗？\n\n只替换卡片内容，不会清空已完成轮数。`;
+    if (!window.confirm(message)) return;
+    applyTemplates(preset.templates);
+    saveState();
+    renderAll();
+    showToast(`已套用：${preset.name}`);
+  }
+
+  function deleteCustomPreset(presetId) {
+    const preset = state.customPresets.find((item) => item.id === presetId);
+    if (!preset) return;
+    if (!window.confirm(`确定删除「${preset.name}」吗？当前9顿和统计不会受影响。`)) return;
+    state.customPresets = state.customPresets.filter((item) => item.id !== presetId);
+    saveState();
+    renderLibrary();
+    showToast("模板已删除");
   }
 
   function renderStats() {
@@ -486,6 +571,74 @@
     showToast("备份文件已导出");
   }
 
+  function exportTemplates() {
+    const now = new Date().toISOString();
+    const payload = {
+      type: "three-meal-light-templates",
+      version: 1,
+      exportedAt: now,
+      presets: [
+        { id: `current-${Date.now()}`, name: "当前9顿", createdAt: now, templates: clonePreset(state.templates) },
+        ...state.customPresets.map((preset) => ({
+          id: preset.id,
+          name: preset.name,
+          createdAt: preset.createdAt,
+          templates: clonePreset(preset.templates)
+        }))
+      ].slice(0, CUSTOM_PRESET_LIMIT)
+    };
+    downloadJson(payload, `三餐九选模板-${new Date().toISOString().slice(0, 10)}.json`);
+    showToast("模板文件已导出");
+  }
+
+  function downloadJson(payload, filename) {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function openTemplateImport() {
+    refs.importTemplatesInput.value = "";
+    refs.importTemplatesInput.click();
+  }
+
+  async function importTemplatesFromFile(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const payload = JSON.parse(await file.text());
+      const incoming = Array.isArray(payload?.presets)
+        ? payload.presets
+        : Array.isArray(payload?.customPresets)
+          ? payload.customPresets
+          : Array.isArray(payload?.templates)
+            ? [{ id: `import-${Date.now()}`, name: payload?.name || "导入模板", createdAt: new Date().toISOString(), templates: payload.templates }]
+            : [];
+      const normalized = normalizeCustomPresets(incoming).map((preset, index) => ({
+        ...preset,
+        id: `import-${Date.now()}-${index}`,
+        name: preset.name === "当前9顿" ? "导入的当前9顿" : preset.name
+      }));
+      if (!normalized.length) throw new Error("No templates found");
+      if (normalized.length + state.customPresets.length > CUSTOM_PRESET_LIMIT) {
+        const message = `最多保存${CUSTOM_PRESET_LIMIT}套模板，导入后会保留最新${CUSTOM_PRESET_LIMIT}套。继续吗？`;
+        if (!window.confirm(message)) return;
+      }
+      state.customPresets = [...normalized, ...state.customPresets].slice(0, CUSTOM_PRESET_LIMIT);
+      saveState();
+      renderLibrary();
+      showToast(`已导入${Math.min(normalized.length, CUSTOM_PRESET_LIMIT)}套模板`);
+    } catch {
+      showToast("导入失败，请选择三餐九选模板文件");
+    }
+  }
+
   function resetAllData() {
     if (!window.confirm("确定清空全部轮数、记录和自定义食物吗？建议先导出备份。")) return;
     state = defaultState();
@@ -522,6 +675,10 @@
     $("#undoLastButton").addEventListener("click", undoLastMeal);
     $("#resetRoundButton").addEventListener("click", resetCurrentRound);
     $("#editorForm").addEventListener("submit", (event) => { event.preventDefault(); saveTemplate(); });
+    refs.saveCustomPresetButton.addEventListener("click", saveCurrentAsCustomPreset);
+    refs.exportTemplatesButton.addEventListener("click", exportTemplates);
+    refs.importTemplatesButton.addEventListener("click", openTemplateImport);
+    refs.importTemplatesInput.addEventListener("change", importTemplatesFromFile);
     $("#exportButton").addEventListener("click", exportData);
     $("#resetButton").addEventListener("click", resetAllData);
     $("#installButton").addEventListener("click", openInstallFlow);

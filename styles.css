@@ -146,6 +146,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { box-shadow: 
 .preset-card strong { font-size: 14px; }
 .preset-card span { color: var(--green); font-size: 10px; font-weight: 900; }
 .preset-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.template-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.template-tools .secondary-button { min-height: 43px; border-radius: 14px; font-size: 11px; }
+.my-preset-grid { display: grid; gap: 10px; }
+.my-preset-card { padding: 15px 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.82); box-shadow: 0 8px 20px rgba(35,74,61,.045); }
+.my-preset-card header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.my-preset-card strong { display: block; font-size: 14px; }
+.my-preset-card small { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
+.my-preset-card p { margin: 9px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.my-preset-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 12px; }
+.my-preset-actions .secondary-button, .my-preset-actions .text-button { min-height: 38px; border-radius: 13px; font-size: 10px; }
 .custom-heading { margin-top: 2px; }
 .tone-1 { --tone-bg: #f8e6bd; } .tone-2 { --tone-bg: #dceee5; } .tone-3 { --tone-bg: #e4ebf7; }
 .tone-4 { --tone-bg: #f3ddd8; } .tone-5 { --tone-bg: #d9edf0; } .tone-6 { --tone-bg: #eee1f5; }
