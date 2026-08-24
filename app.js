@@ -2,11 +2,6 @@
   "use strict";
 
   const STORAGE_KEY = "three-meal-light-v1";
-  const SLOTS = {
-    breakfast: { name: "早餐", icon: "☀️", color: "#D9903D", defaultTemplateId: "meal-1" },
-    lunch: { name: "午餐", icon: "🌤️", color: "#2C7A61", defaultTemplateId: "meal-4" },
-    dinner: { name: "晚餐", icon: "🌙", color: "#5D8FA8", defaultTemplateId: "meal-5" }
-  };
   const DEFAULT_TEMPLATES = [
     { id: "meal-1", emoji: "🥔", name: "土豆", foods: "蒸土豆、烤土豆或少油土豆块", tip: "当主食吃，别再叠加太多米饭面条。" },
     { id: "meal-2", emoji: "🥣", name: "无糖酸奶", foods: "无糖酸奶，可以加少量水果或燕麦", tip: "优先选无糖，太甜的酸奶按甜品看。" },
@@ -27,48 +22,36 @@
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const cloneTemplates = () => DEFAULT_TEMPLATES.map((item) => ({ ...item }));
   const defaultState = () => ({
-    version: 3,
+    version: 4,
     templates: cloneTemplates(),
-    settings: { times: { breakfast: "08:00", lunch: "12:30", dinner: "18:30" } },
-    days: {}
+    loop: {
+      roundsCompleted: 0,
+      currentRound: 1,
+      checkedIds: [],
+      events: []
+    }
   });
 
-  let migratedOnLoad = false;
   let state = loadState();
-  let selectedDate = dateKey(new Date());
-  let activeSlotKey = null;
   let activeTemplateId = null;
-  let selectedSatiety = null;
   let installPrompt = null;
   let toastTimer = null;
 
   const refs = {
-    dateTitle: $("#dateTitle"),
-    dateSubtitle: $("#dateSubtitle"),
-    nextDayButton: $("#nextDayButton"),
-    dailyMealList: $("#dailyMealList"),
-    doneCount: $("#doneCount"),
-    miniProgress: $("#miniProgress"),
-    progressRing: $("#progressRing"),
-    dailyHeadline: $("#dailyHeadline"),
-    dailyMessage: $("#dailyMessage"),
-    streakCount: $("#streakCount"),
-    customCount: $("#customCount"),
-    weightInput: $("#weightInput"),
-    weightTrend: $("#weightTrend"),
+    roundTitle: $("#roundTitle"),
+    roundMessage: $("#roundMessage"),
+    currentRoundText: $("#currentRoundText"),
+    roundProgressText: $("#roundProgressText"),
+    roundProgressBar: $("#roundProgressBar"),
+    roundsCompleted: $("#roundsCompleted"),
+    checkinGrid: $("#checkinGrid"),
     templateGrid: $("#templateGrid"),
-    pickerSheet: $("#pickerSheet"),
-    pickerEyebrow: $("#pickerEyebrow"),
-    pickerGrid: $("#pickerGrid"),
-    recordSheet: $("#recordSheet"),
-    recordEyebrow: $("#recordEyebrow"),
-    recordTitle: $("#recordTitle"),
-    selectedPlan: $("#selectedPlan"),
-    foodNote: $("#foodNote"),
-    satietyScale: $("#satietyScale"),
-    recordFeedback: $("#recordFeedback"),
-    completeMealButton: $("#completeMealButton"),
+    historyList: $("#historyList"),
+    statsRounds: $("#statsRounds"),
+    statsMeals: $("#statsMeals"),
+    statsCurrent: $("#statsCurrent"),
     editorSheet: $("#editorSheet"),
+    sheetBackdrop: $("#sheetBackdrop"),
     editorEyebrow: $("#editorEyebrow"),
     templateIdInput: $("#templateIdInput"),
     templateEmoji: $("#templateEmoji"),
@@ -76,14 +59,7 @@
     templateFoods: $("#templateFoods"),
     templateTip: $("#templateTip"),
     installSheet: $("#installSheet"),
-    sheetBackdrop: $("#sheetBackdrop"),
     toast: $("#toast"),
-    weekBars: $("#weekBars"),
-    historyList: $("#historyList"),
-    weekMeals: $("#weekMeals"),
-    weekPerfectDays: $("#weekPerfectDays"),
-    weekSatiety: $("#weekSatiety"),
-    timeForm: $("#timeForm"),
     celebrationCanvas: $("#celebrationCanvas")
   };
 
@@ -92,82 +68,54 @@
       const saved = Array.isArray(savedTemplates)
         ? savedTemplates.find((item) => item?.id === fallback.id) || savedTemplates[index]
         : null;
+      const wasLegacyDefault = !saved || LEGACY_DEFAULT_TEMPLATE_NAMES.includes(saved.name);
+      const source = wasLegacyDefault ? fallback : { ...fallback, ...saved };
       return {
-        ...fallback,
-        ...(saved || {}),
         id: fallback.id,
-        emoji: String(saved?.emoji || fallback.emoji).slice(0, 4),
-        name: String(saved?.name || fallback.name).slice(0, 12),
-        foods: String(saved?.foods || fallback.foods).slice(0, 80),
-        tip: String(saved?.tip || fallback.tip).slice(0, 60)
+        emoji: String(source.emoji || fallback.emoji).slice(0, 4),
+        name: String(source.name || fallback.name).slice(0, 12),
+        foods: String(source.foods || fallback.foods).slice(0, 80),
+        tip: String(source.tip || fallback.tip).slice(0, 60)
       };
     });
   }
 
-  function migrateV2(saved) {
-    const fallback = defaultState();
-    const savedTemplates = Array.isArray(saved.templates) ? saved.templates : [];
-    return {
-      version: 3,
-      templates: DEFAULT_TEMPLATES.map((simpleTemplate, index) => {
-        const savedTemplate = savedTemplates.find((item) => item?.id === simpleTemplate.id) || savedTemplates[index];
-        const wasLegacyDefault = !savedTemplate || LEGACY_DEFAULT_TEMPLATE_NAMES.includes(savedTemplate.name);
-        return wasLegacyDefault ? { ...simpleTemplate } : {
-          ...simpleTemplate,
-          ...savedTemplate,
-          id: simpleTemplate.id,
-          emoji: String(savedTemplate?.emoji || simpleTemplate.emoji).slice(0, 4),
-          name: String(savedTemplate?.name || simpleTemplate.name).slice(0, 12),
-          foods: String(savedTemplate?.foods || simpleTemplate.foods).slice(0, 80),
-          tip: String(savedTemplate?.tip || simpleTemplate.tip).slice(0, 60)
-        };
-      }),
-      settings: { times: { ...fallback.settings.times, ...(saved.settings?.times || {}) } },
-      days: saved.days || {}
-    };
-  }
-
-  function migrateV1(saved) {
+  function migrateLegacy(saved) {
     const next = defaultState();
-    next.settings.times = { ...next.settings.times, ...(saved.settings?.times || {}) };
-    Object.entries(saved.days || {}).forEach(([key, oldDay]) => {
-      const day = { weight: oldDay?.weight || "", meals: {} };
-      Object.keys(SLOTS).forEach((slotKey) => {
-        const oldRecord = oldDay?.meals?.[slotKey];
-        if (!oldRecord) return;
-        day.meals[slotKey] = {
-          templateId: SLOTS[slotKey].defaultTemplateId,
-          done: Boolean(oldRecord.done),
-          note: String(oldRecord.note || ""),
-          satiety: Number(oldRecord.satiety) || null,
-          updatedAt: oldRecord.updatedAt || null
-        };
+    next.templates = normalizeTemplates(saved?.templates);
+    const doneRecords = [];
+    Object.entries(saved?.days || {}).sort().forEach(([date, day]) => {
+      Object.values(day?.meals || {}).forEach((record) => {
+        if (record?.done) doneRecords.push({ date, templateId: record.templateId });
       });
-      next.days[key] = day;
     });
+    next.loop.roundsCompleted = Math.floor(doneRecords.length / 9);
+    next.loop.currentRound = next.loop.roundsCompleted + 1;
+    next.loop.checkedIds = [];
     return next;
   }
 
   function loadState() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (!saved || !saved.days) return defaultState();
-      if (saved.version === 1) {
-        migratedOnLoad = true;
-        return migrateV1(saved);
+      if (!saved) return defaultState();
+      if (saved.version === 4 && saved.loop) {
+        const fallback = defaultState();
+        const checkedIds = Array.isArray(saved.loop.checkedIds)
+          ? saved.loop.checkedIds.filter((id) => DEFAULT_TEMPLATES.some((item) => item.id === id)).slice(0, 9)
+          : [];
+        return {
+          version: 4,
+          templates: normalizeTemplates(saved.templates),
+          loop: {
+            roundsCompleted: Math.max(0, Number(saved.loop.roundsCompleted) || 0),
+            currentRound: Math.max(1, Number(saved.loop.currentRound) || fallback.loop.currentRound),
+            checkedIds,
+            events: Array.isArray(saved.loop.events) ? saved.loop.events.slice(0, 80) : []
+          }
+        };
       }
-      if (saved.version === 2) {
-        migratedOnLoad = true;
-        return migrateV2(saved);
-      }
-      if (saved.version !== 3) return defaultState();
-      const fallback = defaultState();
-      return {
-        version: 3,
-        templates: normalizeTemplates(saved.templates),
-        settings: { times: { ...fallback.settings.times, ...(saved.settings?.times || {}) } },
-        days: saved.days || {}
-      };
+      return migrateLegacy(saved);
     } catch {
       return defaultState();
     }
@@ -175,51 +123,6 @@
 
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
-
-  function dateKey(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
-  function parseDate(key) {
-    const [year, month, day] = key.split("-").map(Number);
-    return new Date(year, month - 1, day, 12);
-  }
-
-  function addDays(key, amount) {
-    const date = parseDate(key);
-    date.setDate(date.getDate() + amount);
-    return dateKey(date);
-  }
-
-  function getDay(key = selectedDate, create = false) {
-    if (!state.days[key] && create) state.days[key] = { weight: "", meals: {} };
-    return state.days[key] || { weight: "", meals: {} };
-  }
-
-  function mealRecord(key, slotKey) {
-    return getDay(key).meals?.[slotKey] || {
-      templateId: SLOTS[slotKey].defaultTemplateId,
-      done: false,
-      note: "",
-      satiety: null,
-      updatedAt: null
-    };
-  }
-
-  function templateFor(id) {
-    return state.templates.find((item) => item.id === id) || state.templates[0];
-  }
-
-  function templateNumber(id) {
-    return Math.max(1, state.templates.findIndex((item) => item.id === id) + 1);
-  }
-
-  function mealCount(key) {
-    return Object.keys(SLOTS).filter((slotKey) => mealRecord(key, slotKey).done).length;
   }
 
   function escapeHtml(value) {
@@ -231,170 +134,132 @@
       .replaceAll("'", "&#039;");
   }
 
-  function formatSelectedDate() {
-    const today = dateKey(new Date());
-    if (selectedDate === today) return "今天";
-    if (selectedDate === addDays(today, -1)) return "昨天";
-    return parseDate(selectedDate).toLocaleDateString("zh-CN", { month: "long", day: "numeric" });
+  function templateFor(id) {
+    return state.templates.find((item) => item.id === id) || state.templates[0];
   }
 
-  function renderToday() {
-    const today = dateKey(new Date());
-    const day = getDay();
-    const done = mealCount(selectedDate);
-    refs.dateTitle.textContent = formatSelectedDate();
-    refs.dateSubtitle.textContent = parseDate(selectedDate).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
-    refs.nextDayButton.disabled = selectedDate >= today;
-    refs.doneCount.textContent = done;
-    refs.miniProgress.textContent = `${done} / 3`;
-    refs.progressRing.style.setProperty("--progress", Math.round((done / 3) * 100));
-    refs.streakCount.textContent = calculateStreak();
-    refs.customCount.textContent = state.templates.length;
-    refs.weightInput.value = day.weight || "";
-    updateWeightTrend();
+  function checkedCount() {
+    return state.loop.checkedIds.length;
+  }
 
-    const messages = [
-      ["每餐就选一个常吃项", "土豆、酸奶、鸡胸肉这些都可以，简单记录就行。"],
-      ["第一餐完成了", "下一餐继续选一个顺手的食物，不用配得很复杂。"],
-      ["今天已经完成大半", "正常吃完下一餐，不用为了减重故意挨饿。"],
-      ["今天三餐已完成", "简单、能长期坚持，就是好计划。"]
-    ];
-    refs.dailyHeadline.textContent = messages[done][0];
-    refs.dailyMessage.textContent = messages[done][1];
+  function renderCheckin() {
+    const count = checkedCount();
+    const progress = Math.round((count / 9) * 100);
+    refs.roundTitle.textContent = count === 0 ? "这一轮从第一顿开始" : count === 8 ? "还差1顿完成一轮" : `这一轮已完成${count}顿`;
+    refs.roundMessage.textContent = count === 0
+      ? "直接点下面的卡片打卡。9顿打完，自动算1轮。"
+      : "继续点没有完成的卡片；点错了也可以再点一次取消。";
+    refs.currentRoundText.textContent = `第 ${state.loop.currentRound} 轮`;
+    refs.roundProgressText.textContent = `${count} / 9 顿`;
+    refs.roundProgressBar.style.width = `${progress}%`;
+    refs.roundsCompleted.textContent = state.loop.roundsCompleted;
 
-    refs.dailyMealList.innerHTML = Object.entries(SLOTS).map(([slotKey, slot]) => {
-      const record = mealRecord(selectedDate, slotKey);
-      const template = templateFor(record.templateId);
-      const number = templateNumber(template.id);
+    refs.checkinGrid.innerHTML = state.templates.map((template, index) => {
+      const isChecked = state.loop.checkedIds.includes(template.id);
       return `
-        <article class="daily-meal-card ${record.done ? "is-done" : ""}" style="--slot-color:${slot.color}">
-          <div class="slot-heading"><div><strong>${slot.icon} ${slot.name}</strong><time>${escapeHtml(state.settings.times[slotKey])}</time></div><span class="done-badge">${record.done ? "✓ 已完成" : "待完成"}</span></div>
-          <div class="chosen-template tone-${number}">
-            <span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span>
-            <div class="chosen-copy"><strong>${escapeHtml(template.name)}</strong><p>${escapeHtml(template.foods)}</p></div>
-            <span class="template-number">#${number}</span>
-          </div>
-          <div class="meal-actions"><button class="pick-button" type="button" data-pick="${slotKey}">换食物</button><button class="record-button" type="button" data-record="${slotKey}">${record.done ? "修改记录" : "完成这餐"}</button></div>
-        </article>`;
+        <button class="template-card checkin-card tone-${index + 1} ${isChecked ? "is-checked" : ""}" type="button" data-check-meal="${template.id}" aria-label="${isChecked ? "取消" : "打卡"}第${index + 1}顿 ${escapeHtml(template.name)}">
+          <span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span>
+          <b>${index + 1}. ${escapeHtml(template.name)}</b>
+          <span>${escapeHtml(template.foods)}</span>
+          <i class="check-label">${isChecked ? "已打卡" : "点我打卡"}</i>
+        </button>`;
     }).join("");
-
-    $$('[data-pick]', refs.dailyMealList).forEach((button) => button.addEventListener("click", () => openPicker(button.dataset.pick)));
-    $$('[data-record]', refs.dailyMealList).forEach((button) => button.addEventListener("click", () => openRecord(button.dataset.record)));
-  }
-
-  function calculateStreak() {
-    let streak = 0;
-    let key = dateKey(new Date());
-    if (mealCount(key) < 3) key = addDays(key, -1);
-    while (mealCount(key) === 3) {
-      streak += 1;
-      key = addDays(key, -1);
-    }
-    return streak;
-  }
-
-  function updateWeightTrend() {
-    const current = Number(getDay().weight);
-    const previousKey = Object.keys(state.days).filter((key) => key < selectedDate && Number(state.days[key]?.weight) > 0).sort().at(-1);
-    if (!current) refs.weightTrend.textContent = "记录后可查看趋势";
-    else if (!previousKey) refs.weightTrend.textContent = "已记录第一笔体重";
-    else {
-      const diff = current - Number(state.days[previousKey].weight);
-      refs.weightTrend.textContent = Math.abs(diff) < 0.05 ? "与上次记录基本持平" : `较上次${diff > 0 ? "增加" : "减少"} ${Math.abs(diff).toFixed(1)} kg`;
-    }
+    $$("[data-check-meal]", refs.checkinGrid).forEach((button) => button.addEventListener("click", () => toggleMeal(button.dataset.checkMeal)));
   }
 
   function renderLibrary() {
     refs.templateGrid.innerHTML = state.templates.map((template, index) => `
-      <button class="template-card tone-${index + 1}" type="button" data-edit-template="${template.id}" aria-label="编辑第${index + 1}项 ${escapeHtml(template.name)}">
-        <span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span><b>${escapeHtml(template.name)}</b><span>${escapeHtml(template.foods)}</span><i class="edit-label">编辑</i>
+      <button class="template-card tone-${index + 1}" type="button" data-edit-template="${template.id}" aria-label="编辑第${index + 1}顿 ${escapeHtml(template.name)}">
+        <span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span>
+        <b>${escapeHtml(template.name)}</b>
+        <span>${escapeHtml(template.foods)}</span>
+        <i class="edit-label">编辑</i>
       </button>`).join("");
-    $$('[data-edit-template]', refs.templateGrid).forEach((button) => button.addEventListener("click", () => openEditor(button.dataset.editTemplate)));
-    Object.entries(state.settings.times).forEach(([key, value]) => {
-      const input = $(`#${key}Time`);
-      if (input) input.value = value;
-    });
+    $$("[data-edit-template]", refs.templateGrid).forEach((button) => button.addEventListener("click", () => openEditor(button.dataset.editTemplate)));
   }
 
-  function openPicker(slotKey) {
-    activeSlotKey = slotKey;
-    const record = mealRecord(selectedDate, slotKey);
-    refs.pickerEyebrow.textContent = `${SLOTS[slotKey].name} · 选一个常吃项`;
-    refs.pickerGrid.innerHTML = state.templates.map((template, index) => `
-      <button class="picker-option tone-${index + 1} ${template.id === record.templateId ? "is-selected" : ""}" type="button" data-choose-template="${template.id}">
-        <i class="picker-check">✓</i><span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span><b>${index + 1}. ${escapeHtml(template.name)}</b><span>${escapeHtml(template.foods)}</span>
-      </button>`).join("");
-    $$('[data-choose-template]', refs.pickerGrid).forEach((button) => button.addEventListener("click", () => chooseTemplate(button.dataset.chooseTemplate)));
-    showSheet(refs.pickerSheet);
+  function renderStats() {
+    const count = checkedCount();
+    refs.statsRounds.textContent = `${state.loop.roundsCompleted} 轮`;
+    refs.statsMeals.textContent = `${state.loop.roundsCompleted * 9 + count} 顿`;
+    refs.statsCurrent.textContent = `${count} / 9`;
+    refs.historyList.innerHTML = state.loop.events.length
+      ? state.loop.events.slice(0, 30).map((event) => `
+        <article class="history-item">
+          <div class="history-date"><strong>${event.round}</strong><span>第${event.round}轮</span></div>
+          <div class="history-detail"><strong>完成1轮</strong><span>${escapeHtml(formatDateTime(event.completedAt))}</span></div>
+          <div class="history-dots" aria-label="完成9顿">${Array.from({ length: 3 }, () => '<i class="is-done"></i>').join("")}</div>
+        </article>`).join("")
+      : '<div class="empty-state">还没有完成一轮。<br />点满9顿后，这里会记录完成时间。</div>';
   }
 
-  function chooseTemplate(templateId) {
-    if (!activeSlotKey) return;
-    const day = getDay(selectedDate, true);
-    const previous = mealRecord(selectedDate, activeSlotKey);
-    const changed = previous.templateId !== templateId;
-    day.meals[activeSlotKey] = changed
-      ? { templateId, done: false, note: "", satiety: null, updatedAt: new Date().toISOString() }
-      : { ...previous };
+  function renderAll() {
+    renderCheckin();
+    renderLibrary();
+    renderStats();
+  }
+
+  function toggleMeal(templateId) {
+    const checked = state.loop.checkedIds.includes(templateId);
+    const template = templateFor(templateId);
+    if (checked) {
+      state.loop.checkedIds = state.loop.checkedIds.filter((id) => id !== templateId);
+      saveState();
+      renderAll();
+      showToast(`已取消「${template.name}」`);
+      return;
+    }
+
+    state.loop.checkedIds.push(templateId);
+    if (state.loop.checkedIds.length >= 9) completeRound();
+    else {
+      saveState();
+      renderAll();
+      showToast(`第${state.loop.checkedIds.length}顿已打卡：${template.name}`);
+    }
+  }
+
+  function completeRound() {
+    const completedRound = state.loop.currentRound;
+    state.loop.roundsCompleted += 1;
+    state.loop.events.unshift({ round: completedRound, completedAt: new Date().toISOString() });
+    state.loop.events = state.loop.events.slice(0, 80);
+    state.loop.currentRound = state.loop.roundsCompleted + 1;
+    state.loop.checkedIds = [];
     saveState();
-    closeSheets();
-    renderToday();
-    renderHistory();
-    showToast(changed ? `${SLOTS[activeSlotKey].name}已换成「${templateFor(templateId).name}」` : "这餐已经选好了");
+    renderAll();
+    celebrate(`第${completedRound}轮完成，已累计 ${state.loop.roundsCompleted} 轮`);
   }
 
-  function openRecord(slotKey) {
-    activeSlotKey = slotKey;
-    const record = mealRecord(selectedDate, slotKey);
-    const template = templateFor(record.templateId);
-    const number = templateNumber(template.id);
-    selectedSatiety = Number(record.satiety) || null;
-    refs.recordEyebrow.textContent = `${record.done ? "修改" : "记录"}${SLOTS[slotKey].name}`;
-    refs.recordTitle.textContent = template.name;
-    refs.selectedPlan.className = `selected-plan tone-${number}`;
-    refs.selectedPlan.innerHTML = `<span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span><div><strong>第${number}项 · ${escapeHtml(template.name)}</strong><p>${escapeHtml(template.foods)}</p><small>${escapeHtml(template.tip)}</small></div>`;
-    refs.foodNote.value = record.note || "";
-    refs.completeMealButton.textContent = record.done ? "保存修改" : "完成这餐";
-    $$('button[data-value]', refs.satietyScale).forEach((button) => button.classList.toggle("is-selected", Number(button.dataset.value) === selectedSatiety));
-    updateRecordFeedback();
-    showSheet(refs.recordSheet);
-  }
-
-  function updateRecordFeedback() {
-    const template = activeSlotKey ? templateFor(mealRecord(selectedDate, activeSlotKey).templateId) : null;
-    let text = template?.tip || "七八分饱、能坚持，比饿着更重要。";
-    if (selectedSatiety >= 4) text += " 这次有点撑也没关系，下一餐照常吃，不要补偿性挨饿。";
-    if (selectedSatiety && selectedSatiety <= 2) text += " 如果经常吃不饱，可以适当增加蔬菜或蛋白质。";
-    refs.recordFeedback.textContent = text;
-  }
-
-  function saveRecord(complete) {
-    if (!activeSlotKey) return;
-    const day = getDay(selectedDate, true);
-    const previous = mealRecord(selectedDate, activeSlotKey);
-    const wasDone = Boolean(previous.done);
-    day.meals[activeSlotKey] = {
-      ...previous,
-      done: complete ? true : wasDone,
-      note: refs.foodNote.value.trim(),
-      satiety: selectedSatiety,
-      updatedAt: new Date().toISOString()
-    };
+  function undoLastMeal() {
+    const lastId = state.loop.checkedIds.at(-1);
+    if (!lastId) {
+      showToast("这一轮还没有打卡");
+      return;
+    }
+    state.loop.checkedIds = state.loop.checkedIds.slice(0, -1);
     saveState();
-    closeSheets();
-    renderToday();
-    renderHistory();
-    if (complete) {
-      showToast(wasDone ? "这餐记录已更新" : `${SLOTS[activeSlotKey].name}已完成 ✓`);
-      if (!wasDone && mealCount(selectedDate) === 3) celebrate();
-    } else showToast("备注已保存");
+    renderAll();
+    showToast(`已撤销：${templateFor(lastId).name}`);
+  }
+
+  function resetCurrentRound() {
+    if (!state.loop.checkedIds.length) {
+      showToast("这一轮还是空的");
+      return;
+    }
+    if (!window.confirm("确定清空这一轮已打卡的内容吗？累计轮数不会清零。")) return;
+    state.loop.checkedIds = [];
+    saveState();
+    renderAll();
+    showToast("已清空这一轮");
   }
 
   function openEditor(templateId) {
     activeTemplateId = templateId;
     const template = templateFor(templateId);
-    const number = templateNumber(templateId);
-    refs.editorEyebrow.textContent = `编辑第${number}项`;
+    const number = state.templates.findIndex((item) => item.id === templateId) + 1;
+    refs.editorEyebrow.textContent = `编辑第${number}顿`;
     refs.templateIdInput.value = template.id;
     refs.templateEmoji.value = template.emoji;
     refs.templateName.value = template.name;
@@ -418,43 +283,14 @@
     saveState();
     closeSheets();
     renderAll();
-    showToast(`第${index + 1}项已保存`);
-  }
-
-  function renderHistory() {
-    const today = dateKey(new Date());
-    const dates = Array.from({ length: 7 }, (_, index) => addDays(today, index - 6));
-    let totalMeals = 0;
-    let perfectDays = 0;
-    const satietyValues = [];
-    refs.weekBars.innerHTML = dates.map((key) => {
-      const count = mealCount(key);
-      totalMeals += count;
-      if (count === 3) perfectDays += 1;
-      Object.keys(SLOTS).forEach((slotKey) => {
-        const value = Number(mealRecord(key, slotKey).satiety);
-        if (value) satietyValues.push(value);
-      });
-      return `<div class="week-day ${key === today ? "is-today" : ""}"><div class="bar-track"><div class="bar-fill" style="height:${Math.max(5, (count / 3) * 100)}%"></div></div><span>${parseDate(key).toLocaleDateString("zh-CN", { weekday: "short" }).replace("周", "")}</span></div>`;
-    }).join("");
-    refs.weekMeals.textContent = `${totalMeals} 餐`;
-    refs.weekPerfectDays.textContent = `${perfectDays} 天`;
-    refs.weekSatiety.textContent = satietyValues.length ? `${(satietyValues.reduce((sum, value) => sum + value, 0) / satietyValues.length).toFixed(1)} / 5` : "--";
-
-    const recordedDates = Object.keys(state.days).filter((key) => mealCount(key) > 0 || state.days[key]?.weight).sort().reverse().slice(0, 30);
-    refs.historyList.innerHTML = recordedDates.length ? recordedDates.map((key) => {
-      const count = mealCount(key);
-      const chosen = Object.keys(SLOTS).filter((slotKey) => mealRecord(key, slotKey).done).map((slotKey) => `${SLOTS[slotKey].name}·${templateFor(mealRecord(key, slotKey).templateId).name}`);
-      const detail = chosen.length ? chosen.join(" / ") : `体重 ${state.days[key].weight} kg`;
-      return `<article class="history-item"><div class="history-date"><strong>${parseDate(key).getDate()}</strong><span>${parseDate(key).toLocaleDateString("zh-CN", { month: "short" })}</span></div><div class="history-detail"><strong>${count === 3 ? "三餐完成" : `完成 ${count} 餐`}</strong><span>${escapeHtml(detail)}</span></div><div class="history-dots" aria-label="完成 ${count} 餐">${[0,1,2].map((index) => `<i class="${index < count ? "is-done" : ""}"></i>`).join("")}</div></article>`;
-    }).join("") : '<div class="empty-state">还没有记录。<br />从今天任选一餐开始，慢慢积累自己的节奏。</div>';
+    showToast(`第${index + 1}顿已保存`);
   }
 
   function navigateTo(target) {
     $$(".view").forEach((view) => view.classList.toggle("is-active", view.dataset.view === target));
     $$(".nav-item").forEach((button) => button.classList.toggle("is-active", button.dataset.target === target));
-    if (target === "library") renderLibrary();
-    if (target === "history") renderHistory();
+    if (target === "custom") renderLibrary();
+    if (target === "stats") renderStats();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -467,7 +303,7 @@
 
   function closeSheets() {
     refs.sheetBackdrop.hidden = true;
-    [refs.pickerSheet, refs.recordSheet, refs.editorSheet, refs.installSheet].forEach((sheet) => { sheet.hidden = true; });
+    [refs.editorSheet, refs.installSheet].forEach((sheet) => { sheet.hidden = true; });
     document.body.style.overflow = "";
   }
 
@@ -478,7 +314,7 @@
     toastTimer = setTimeout(() => refs.toast.classList.remove("is-visible"), 2300);
   }
 
-  function celebrate() {
+  function celebrate(message) {
     const canvas = refs.celebrationCanvas;
     const context = canvas.getContext("2d");
     const ratio = window.devicePixelRatio || 1;
@@ -486,16 +322,41 @@
     canvas.height = window.innerHeight * ratio;
     context.scale(ratio, ratio);
     const colors = ["#28765D", "#EFBC61", "#EB745D", "#5D8FA8", "#CDE7A3"];
-    const particles = Array.from({ length: 70 }, () => ({ x: window.innerWidth / 2, y: window.innerHeight * .5, vx: (Math.random() - .5) * 9, vy: -Math.random() * 8 - 3, gravity: .18 + Math.random() * .08, rotation: Math.random() * Math.PI, spin: (Math.random() - .5) * .25, size: Math.random() * 6 + 4, color: colors[Math.floor(Math.random() * colors.length)], life: 80 + Math.random() * 30 }));
+    const particles = Array.from({ length: 72 }, () => ({
+      x: window.innerWidth / 2,
+      y: window.innerHeight * .48,
+      vx: (Math.random() - .5) * 9,
+      vy: -Math.random() * 8 - 3,
+      gravity: .18 + Math.random() * .08,
+      rotation: Math.random() * Math.PI,
+      spin: (Math.random() - .5) * .25,
+      size: Math.random() * 6 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 80 + Math.random() * 30
+    }));
     let frame = 0;
     const draw = () => {
       context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      particles.forEach((p) => { p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.rotation += p.spin; p.life -= 1; context.save(); context.globalAlpha = Math.max(0, p.life / 90); context.translate(p.x, p.y); context.rotate(p.rotation); context.fillStyle = p.color; context.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * .65); context.restore(); });
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.rotation += p.spin;
+        p.life -= 1;
+        context.save();
+        context.globalAlpha = Math.max(0, p.life / 90);
+        context.translate(p.x, p.y);
+        context.rotate(p.rotation);
+        context.fillStyle = p.color;
+        context.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * .65);
+        context.restore();
+      });
       frame += 1;
-      if (frame < 112) requestAnimationFrame(draw); else context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (frame < 112) requestAnimationFrame(draw);
+      else context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     };
     requestAnimationFrame(draw);
-    showToast("今天三餐完成啦，稳稳的一天 ✨");
+    showToast(message);
   }
 
   function exportData() {
@@ -503,7 +364,7 @@
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `三餐九选备份-${dateKey(new Date())}.json`;
+    link.download = `三餐九选备份-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -511,14 +372,13 @@
     showToast("备份文件已导出");
   }
 
-  function resetData() {
-    if (!window.confirm("确定恢复默认食物并清除全部记录吗？此操作无法撤销，建议先导出备份。")) return;
+  function resetAllData() {
+    if (!window.confirm("确定清空全部轮数、记录和自定义食物吗？建议先导出备份。")) return;
     state = defaultState();
     saveState();
-    selectedDate = dateKey(new Date());
     renderAll();
-    navigateTo("today");
-    showToast("已恢复默认食物");
+    navigateTo("checkin");
+    showToast("已恢复默认");
   }
 
   function openInstallFlow() {
@@ -528,40 +388,37 @@
     } else showSheet(refs.installSheet);
   }
 
-  function bindEvents() {
-    $("#prevDayButton").addEventListener("click", () => { selectedDate = addDays(selectedDate, -1); renderToday(); });
-    refs.nextDayButton.addEventListener("click", () => { const next = addDays(selectedDate, 1); if (next <= dateKey(new Date())) selectedDate = next; renderToday(); });
-    $("#dateButton").addEventListener("click", () => { selectedDate = dateKey(new Date()); renderToday(); showToast("已回到今天"); });
-    refs.weightInput.addEventListener("change", () => { const day = getDay(selectedDate, true); day.weight = refs.weightInput.value.trim(); saveState(); updateWeightTrend(); renderHistory(); showToast(day.weight ? "体重已记录" : "已删除这天体重"); });
-    $$(".nav-item").forEach((button) => button.addEventListener("click", () => navigateTo(button.dataset.target)));
-    refs.sheetBackdrop.addEventListener("click", closeSheets);
-    $$('[data-close-sheet]').forEach((button) => button.addEventListener("click", closeSheets));
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeSheets(); });
-    refs.satietyScale.addEventListener("click", (event) => { const button = event.target.closest("button[data-value]"); if (!button) return; selectedSatiety = Number(button.dataset.value); $$('button[data-value]', refs.satietyScale).forEach((item) => item.classList.toggle("is-selected", item === button)); updateRecordFeedback(); });
-    $("#recordForm").addEventListener("submit", (event) => { event.preventDefault(); saveRecord(true); });
-    $("#saveNoteButton").addEventListener("click", () => saveRecord(false));
-    $("#editorForm").addEventListener("submit", (event) => { event.preventDefault(); saveTemplate(); });
-    refs.timeForm.addEventListener("submit", (event) => { event.preventDefault(); const data = new FormData(refs.timeForm); Object.keys(SLOTS).forEach((key) => { state.settings.times[key] = data.get(key) || defaultState().settings.times[key]; }); saveState(); renderToday(); showToast("用餐时间已保存"); });
-    $("#exportButton").addEventListener("click", exportData);
-    $("#resetButton").addEventListener("click", resetData);
-    $("#installButton").addEventListener("click", openInstallFlow);
-    window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); installPrompt = event; });
-    window.addEventListener("appinstalled", () => showToast("已安装到主屏幕"));
-  }
-
-  function renderAll() {
-    renderToday();
-    renderLibrary();
-    renderHistory();
+  function formatDateTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
   async function registerServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
-    try { await navigator.serviceWorker.register("./sw.js", { scope: "./" }); }
-    catch (error) { console.warn("Service worker registration failed", error); }
+    try {
+      await navigator.serviceWorker.register("./sw.js", { scope: "./" });
+    } catch (error) {
+      console.warn("Service worker registration failed", error);
+    }
   }
 
-  if (migratedOnLoad) saveState();
+  function bindEvents() {
+    $$(".nav-item").forEach((button) => button.addEventListener("click", () => navigateTo(button.dataset.target)));
+    $("#undoLastButton").addEventListener("click", undoLastMeal);
+    $("#resetRoundButton").addEventListener("click", resetCurrentRound);
+    $("#editorForm").addEventListener("submit", (event) => { event.preventDefault(); saveTemplate(); });
+    $("#exportButton").addEventListener("click", exportData);
+    $("#resetButton").addEventListener("click", resetAllData);
+    $("#installButton").addEventListener("click", openInstallFlow);
+    refs.sheetBackdrop.addEventListener("click", closeSheets);
+    $$("[data-close-sheet]").forEach((button) => button.addEventListener("click", closeSheets));
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeSheets(); });
+    window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); installPrompt = event; });
+    window.addEventListener("appinstalled", () => showToast("已安装到主屏幕"));
+  }
+
+  saveState();
   bindEvents();
   renderAll();
   registerServiceWorker();
