@@ -270,5 +270,155 @@ window.RECIPE_LIBRARY = [
       { slot: "早餐", food: "鸡蛋 + 生菜。", tag: "估90-160卡" }
     ],
     rules: ["热量为按常规小份量估算；可用水煮蛋或少油煎蛋。"]
+  },
+  {
+    id: "yizhibai-banana-egg-coffee",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "极简轻餐",
+    title: "香蕉鸡蛋黑咖啡",
+    summary: "估算约170-230大卡。香蕉、鸡蛋和黑咖啡，适合很省事的一餐。",
+    fit: "适合早上或下午想简单打卡。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估170-230",
+    meals: [
+      { slot: "早餐", food: "香蕉1根 + 鸡蛋1个 + 黑咖啡或无糖茶。", tag: "估170-230卡" }
+    ],
+    rules: ["黑咖啡不加糖；明显头晕、心慌或胃不舒服就停止。"]
+  },
+  {
+    id: "yizhibai-eggs-soymilk",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "极简轻餐",
+    title: "鸡蛋无糖豆浆",
+    summary: "估算约220-280大卡。鸡蛋2个配一杯无糖豆浆。",
+    fit: "适合想补蛋白但不想做饭的一餐。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估220-280",
+    meals: [
+      { slot: "午餐", food: "鸡蛋2个 + 无糖豆浆1杯。", tag: "估220-280卡" }
+    ],
+    rules: ["豆浆选无糖；如果鸡蛋偏大，热量会更接近上限。"]
+  },
+  {
+    id: "yizhibai-egg-banana",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "极简轻餐",
+    title: "鸡蛋香蕉",
+    summary: "估算约170-230大卡。鸡蛋和香蕉的超简单组合。",
+    fit: "适合晚餐想吃得轻一点。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估170-230",
+    meals: [
+      { slot: "晚餐", food: "鸡蛋1个 + 香蕉1根。", tag: "估170-230卡" }
+    ],
+    rules: ["香蕉按中等大小估算；不要再叠加甜品和奶茶。"]
+  },
+  {
+    id: "yizhibai-milk-coffee",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "极简轻餐",
+    title: "牛奶黑咖啡",
+    summary: "估算约100-160大卡。牛奶配黑咖啡，偏轻的一餐。",
+    fit: "适合早上不太饿的时候。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估100-160",
+    meals: [
+      { slot: "早餐", food: "牛奶1杯 + 黑咖啡或美式1杯。", tag: "估100-160卡" }
+    ],
+    rules: ["这餐偏轻；容易低血糖时加鸡蛋，不要硬撑。"]
+  },
+  {
+    id: "yizhibai-half-chicken-sandwich",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "三明治/外食",
+    title: "半个鸡肉三明治",
+    summary: "估算约180-280大卡。鸡肉类三明治吃半个，饮品选无糖。",
+    fit: "适合外食日想保留主食口感。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估180-280",
+    meals: [
+      { slot: "午餐", food: "鸡肉、牛肉、金枪鱼或火鸡三明治半个 + 无糖饮品。", tag: "估180-280卡" }
+    ],
+    rules: ["酱料少放；不加薯片、曲奇和含糖饮料。"]
+  },
+  {
+    id: "yizhibai-half-sandwich-orange",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "三明治/外食",
+    title: "半个三明治半个橙子",
+    summary: "估算约210-290大卡。半个三明治加半个橙子。",
+    fit: "适合把午餐或下午餐吃得轻一点。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估210-290",
+    meals: [
+      { slot: "午餐", food: "三明治半个 + 橙子半个。", tag: "估210-290卡" }
+    ],
+    rules: ["三明治选择鸡肉、牛肉、金枪鱼或鸡蛋款；晚上别再补面包。"]
+  },
+  {
+    id: "yizhibai-konjac-egg",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "极简轻餐",
+    title: "魔芋面鸡蛋",
+    summary: "估算约120-200大卡。魔芋面配鸡蛋，清淡但有面感。",
+    fit: "适合想吃面感、又不想吃太多热量的一餐。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估120-200",
+    meals: [
+      { slot: "晚餐", food: "魔芋面1份 + 鸡蛋1个，调味尽量清淡。", tag: "估120-200卡" }
+    ],
+    rules: ["这餐饱腹感可能一般；饿了优先补无糖豆浆或鸡蛋。"]
+  },
+  {
+    id: "yizhibai-yuanji-shrimp-wonton",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "袁记云饺",
+    title: "鲜虾云吞小份",
+    summary: "估算约230-300大卡。袁记鲜虾云吞小份，少汤或不喝汤。",
+    fit: "适合附近有袁记云饺时的一餐。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估230-300",
+    meals: [
+      { slot: "午餐", food: "袁记云饺鲜虾云吞5-6颗 + 无糖饮品。", tag: "估230-300卡" }
+    ],
+    rules: ["少汤或不喝汤；如果吃到10颗，就不按300卡内处理。"]
+  },
+  {
+    id: "yizhibai-yuanji-beef-wonton",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "袁记云饺",
+    title: "牛肉云吞小份",
+    summary: "估算约240-300大卡。牛肉云吞拆成小份吃。",
+    fit: "适合想吃外食但控制数量的一餐。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估240-300",
+    meals: [
+      { slot: "午餐", food: "牛肉云吞约5-6颗 + 无糖饮品。", tag: "估240-300卡" }
+    ],
+    rules: ["少汤或不喝汤；大份18个要拆成多餐，不是一餐吃完。"]
+  },
+  {
+    id: "yizhibai-shrimp-veggie-mushroom",
+    sourceApp: "yizhibai-300",
+    sourceLabel: "一只白300卡",
+    series: "虾仁蔬菜",
+    title: "虾仁蔬菜平菇",
+    summary: "估算约150-250大卡。虾仁配蔬菜和平菇，清淡高蛋白。",
+    fit: "适合晚餐想吃得清爽。",
+    sourceText: "旧一只白独立App资料整理，原资料来自公开转述/小红书原图线索，热量为按小份量估算。",
+    kcal: "估150-250",
+    meals: [
+      { slot: "晚餐", food: "虾5-10只 + 蔬菜 + 平菇，少油少酱。", tag: "估150-250卡" }
+    ],
+    rules: ["虾按中小只估算；油多或蘸料重会明显加热量。"]
   }
 ];

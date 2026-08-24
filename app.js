@@ -530,12 +530,16 @@
   }
 
   function relatedRecipes(recipe) {
-    const groups = [
-      [recipe],
-      recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp === recipe.sourceApp && item.series === recipe.series),
-      recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp === recipe.sourceApp && item.series !== recipe.series),
-      recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp !== recipe.sourceApp)
+    const sameSource = [
+      recipe,
+      ...recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp === recipe.sourceApp && item.series === recipe.series),
+      ...recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp === recipe.sourceApp && item.series !== recipe.series)
     ];
+    const sameSourceMealCount = sameSource.flatMap((item) => item.meals || [])
+      .filter((meal) => mealCategory(meal) !== "rule").length;
+    const groups = sameSourceMealCount >= 9
+      ? [sameSource]
+      : [sameSource, recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp !== recipe.sourceApp)];
     const seen = new Set();
     return groups.flat().filter((item) => {
       if (!item || seen.has(item.id)) return false;
