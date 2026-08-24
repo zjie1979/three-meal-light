@@ -143,6 +143,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { box-shadow: 
 .round-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 17px; }
 .round-actions .secondary-button, .round-actions .text-button { min-height: 46px; border-radius: 15px; }
 .stat-summary { margin-top: 0; }
+.current-custom-section { margin: 0 0 28px; }
 .preset-section { margin: 0 0 28px; }
 .template-tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
 .template-tools .secondary-button { min-height: 43px; border-radius: 14px; font-size: 11px; }
