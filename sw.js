@@ -1,4 +1,4 @@
-const CACHE_NAME = "three-meal-light-v4-nine-rounds";
+const CACHE_NAME = "three-meal-light-v5-presets";
 const ASSETS = [
   "./",
   "./index.html",

@@ -140,6 +140,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { box-shadow: 
 .round-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 17px; }
 .round-actions .secondary-button, .round-actions .text-button { min-height: 46px; border-radius: 15px; }
 .stat-summary { margin-top: 0; }
+.preset-section { margin: 0 0 28px; }
+.preset-grid { display: grid; gap: 10px; }
+.preset-card { display: grid; gap: 6px; width: 100%; padding: 15px 16px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.82); text-align: left; box-shadow: 0 8px 20px rgba(35,74,61,.045); }
+.preset-card strong { font-size: 14px; }
+.preset-card span { color: var(--green); font-size: 10px; font-weight: 900; }
+.preset-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.custom-heading { margin-top: 2px; }
 .tone-1 { --tone-bg: #f8e6bd; } .tone-2 { --tone-bg: #dceee5; } .tone-3 { --tone-bg: #e4ebf7; }
 .tone-4 { --tone-bg: #f3ddd8; } .tone-5 { --tone-bg: #d9edf0; } .tone-6 { --tone-bg: #eee1f5; }
 .tone-7 { --tone-bg: #e9e4d5; } .tone-8 { --tone-bg: #e3edcf; } .tone-9 { --tone-bg: #f7dfca; }

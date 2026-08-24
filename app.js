@@ -17,10 +17,95 @@
     "控糖早餐", "高蛋白早餐", "轻食早餐", "家常均衡餐", "清爽蒸煮餐",
     "外卖减负餐", "面食搭配餐", "火锅聪明餐", "自由满足餐"
   ];
+  const PRESET_SETS = [
+    {
+      id: "simple",
+      name: "基础简单版",
+      source: "三餐九选",
+      desc: "回到土豆、酸奶、鸡胸肉这些最简单的常吃项。",
+      templates: clonePreset(DEFAULT_TEMPLATES)
+    },
+    {
+      id: "strawberry-binge",
+      name: "草莓暴食恢复",
+      source: "草莓暴食后餐单",
+      desc: "从暴食后恢复 A/B/C 和恢复 3.0 里压缩成 9 顿。",
+      templates: [
+        { emoji: "☕", name: "温水黑咖", foods: "温水分开喝；可加黑咖或少量奶咖", tip: "这是恢复节奏，不是补偿性挨饿。" },
+        { emoji: "🥚", name: "鸡蛋餐", foods: "鸡蛋 1-2 个，水煮、蒸蛋或番茄炒蛋", tip: "先把蛋白质吃稳。" },
+        { emoji: "🐔", name: "鸡胸鸡腿", foods: "鸡胸、鸡腿或鸡肉 150-250g", tip: "做法清淡，别额外叠加甜饮。" },
+        { emoji: "🥒", name: "黄瓜番茄", foods: "黄瓜、番茄、半个苹果任选", tip: "饿了用来过渡，不要只靠它撑一天。" },
+        { emoji: "🥣", name: "无糖酸奶", foods: "无糖酸奶 1 杯，可配少量水果", tip: "太甜的酸奶按甜品看。" },
+        { emoji: "🍠", name: "红薯南瓜", foods: "红薯、紫薯、老南瓜约 100-150g", tip: "恢复日也可以有主食。" },
+        { emoji: "🥩", name: "牛肉虾仁", foods: "牛肉、虾仁或鱼肉 150g 左右", tip: "晚餐用蛋白质收住。" },
+        { emoji: "🍗", name: "鸡腿玉米", foods: "烤鸡腿 1 个，或鸡腿配玉米/紫薯", tip: "饱腹版用，别硬饿。" },
+        { emoji: "🍽️", name: "聚餐8分饱", foods: "有聚餐时正常吃一餐，到8分饱停", tip: "聚餐当天不再叠加夜宵甜饮。" }
+      ]
+    },
+    {
+      id: "strawberry-daily",
+      name: "草莓平常稳餐",
+      source: "草莓饮食-平常的饮食",
+      desc: "适合普通控饮食日，蛋奶、米饭、蔬菜和蛋白质更均衡。",
+      templates: [
+        { emoji: "🥚", name: "蛋奶坚果", foods: "鸡蛋 2 个 + 牛奶 100ml + 少量坚果", tip: "适合普通早餐，不用断碳。" },
+        { emoji: "🌽", name: "玉米番茄", foods: "半根玉米，或番茄 1 个", tip: "饿了再加，不饿可跳过。" },
+        { emoji: "🍚", name: "米饭牛肉", foods: "米饭 100-150g + 牛肉/鸡腿/三文鱼 + 蔬菜", tip: "正常吃饭，份量清楚。" },
+        { emoji: "🍅", name: "番茄蛋菜", foods: "番茄蛋 + 木耳、娃娃菜、香菇或丝瓜", tip: "晚餐清淡但别只吃菜。" },
+        { emoji: "🐔", name: "鸡肉蔬菜", foods: "鸡肉或牛肉 100-150g + 蔬菜 250g", tip: "中午或晚上都能用。" },
+        { emoji: "🥣", name: "酸奶牛肉", foods: "牛肉 100g + 无糖酸奶 100g", tip: "轻一点但保留蛋白质。" },
+        { emoji: "🍠", name: "红薯蛋白", foods: "红薯/紫薯/玉米 + 鸡胸或牛肉", tip: "粗粮和蛋白质一起吃更稳。" },
+        { emoji: "🍞", name: "吐司鸡蛋", foods: "全麦吐司 + 鸡蛋 + 豆浆或牛奶", tip: "想吃面包时用这一顿。" },
+        { emoji: "🍎", name: "低糖水果", foods: "苹果、蓝莓、梨等 100g 左右", tip: "水果是加餐，不替代正餐蛋白质。" }
+      ]
+    },
+    {
+      id: "mashu-reset",
+      name: "麻薯大餐后",
+      source: "麻薯小狗",
+      desc: "提炼大餐后高盐、高碳、高油恢复和基础外卖安全日。",
+      templates: [
+        { emoji: "🥚", name: "鸡蛋酸奶", foods: "鸡蛋 1 个 + 酸奶香蕉拌豆浆粉", tip: "适合高盐后第一餐。" },
+        { emoji: "🥥", name: "椰水肉饭", foods: "椰子水煮肉 + 米饭约 150g", tip: "不要因为恢复就完全断主食。" },
+        { emoji: "🥬", name: "菠菜冬瓜", foods: "菠菜烧冬瓜，配芋头或土豆", tip: "补钾排钠方向，少盐。" },
+        { emoji: "🥪", name: "三明治", foods: "三明治 1 个，便利店或外卖半个到一个", tip: "适合想稳血糖的一顿。" },
+        { emoji: "🥣", name: "豆乳燕麦", foods: "鸡蛋 + 豆乳燕麦，燕麦约 35g", tip: "高碳后用来稳住食欲。" },
+        { emoji: "🦐", name: "虾菜燕麦", foods: "水煮虾 + 白菜木耳菠菜金针菇 + 少量燕麦", tip: "高油后想清爽时用。" },
+        { emoji: "🍱", name: "家常食堂", foods: "一荤两素 + 米饭一拳或馒头 1 个", tip: "长期更稳的基础版。" },
+        { emoji: "🥘", name: "懒人焖菜", foods: "番茄包菜洋葱 + 鸡蛋/牛肉 + 少量主食", tip: "一锅端，少油少浓酱。" },
+        { emoji: "🥡", name: "外卖拌饭", foods: "轻食拌饭：杂粮饭 + 肉类 + 豆泥，少酱", tip: "必须点外卖时用。" }
+      ]
+    },
+    {
+      id: "yizhibai-outside",
+      name: "一只白外食",
+      source: "一只白",
+      desc: "偏外食和快餐的低负担版本，适合不做饭时套用。",
+      templates: [
+        { emoji: "☕", name: "黑咖鸡蛋", foods: "黑咖或无糖茶 + 鸡蛋 1 个", tip: "简单开头，不加糖。" },
+        { emoji: "🍌", name: "香蕉鸡蛋", foods: "香蕉 1 根 + 鸡蛋 1 个", tip: "短期轻一点，不长期连续用。" },
+        { emoji: "🥛", name: "牛奶咖啡", foods: "牛奶 1 杯 + 黑咖或美式", tip: "适合早餐外带。" },
+        { emoji: "🥪", name: "鸡肉三明治", foods: "板烧鸡腿三明治或同类鸡肉三明治", tip: "不额外加薯条甜品。" },
+        { emoji: "🥯", name: "贝果汉堡", foods: "三明治、汉堡或贝果堡 1 个，少酱", tip: "快餐日用一顿解决。" },
+        { emoji: "🥩", name: "牛腱鸡蛋", foods: "卤牛腱子肉约 130g + 鸡蛋 1 个", tip: "高蛋白收住。" },
+        { emoji: "🍠", name: "红薯牛肉", foods: "半块红薯 + 清淡牛肉", tip: "大餐后补钾方向。" },
+        { emoji: "🍗", name: "椰子鸡", foods: "半只椰子鸡，只吃鸡肉，不喝汤", tip: "想吃一顿正餐恢复时用。" },
+        { emoji: "🥟", name: "云吞分餐", foods: "鲜虾/牛肉云吞 5-10 颗，少汤或不喝汤", tip: "外食方便，但别加甜饮。" }
+      ]
+    }
+  ];
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const cloneTemplates = () => DEFAULT_TEMPLATES.map((item) => ({ ...item }));
+  function clonePreset(templates) {
+    return templates.map((item) => ({
+      emoji: item.emoji,
+      name: item.name,
+      foods: item.foods,
+      tip: item.tip
+    }));
+  }
   const defaultState = () => ({
     version: 4,
     templates: cloneTemplates(),
@@ -45,6 +130,7 @@
     roundProgressBar: $("#roundProgressBar"),
     roundsCompleted: $("#roundsCompleted"),
     checkinGrid: $("#checkinGrid"),
+    presetGrid: $("#presetGrid"),
     templateGrid: $("#templateGrid"),
     historyList: $("#historyList"),
     statsRounds: $("#statsRounds"),
@@ -168,6 +254,14 @@
   }
 
   function renderLibrary() {
+    refs.presetGrid.innerHTML = PRESET_SETS.map((preset) => `
+      <button class="preset-card" type="button" data-apply-preset="${preset.id}" aria-label="套用${escapeHtml(preset.name)}">
+        <strong>${escapeHtml(preset.name)}</strong>
+        <span>${escapeHtml(preset.source)}</span>
+        <p>${escapeHtml(preset.desc)}</p>
+      </button>`).join("");
+    $$("[data-apply-preset]", refs.presetGrid).forEach((button) => button.addEventListener("click", () => applyPreset(button.dataset.applyPreset)));
+
     refs.templateGrid.innerHTML = state.templates.map((template, index) => `
       <button class="template-card tone-${index + 1}" type="button" data-edit-template="${template.id}" aria-label="编辑第${index + 1}顿 ${escapeHtml(template.name)}">
         <span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span>
@@ -176,6 +270,26 @@
         <i class="edit-label">编辑</i>
       </button>`).join("");
     $$("[data-edit-template]", refs.templateGrid).forEach((button) => button.addEventListener("click", () => openEditor(button.dataset.editTemplate)));
+  }
+
+  function applyPreset(presetId) {
+    const preset = PRESET_SETS.find((item) => item.id === presetId);
+    if (!preset) return;
+    const message = `确定把9顿替换成「${preset.name}」吗？\n\n只替换卡片内容，不会清空已完成轮数。`;
+    if (!window.confirm(message)) return;
+    state.templates = DEFAULT_TEMPLATES.map((fallback, index) => {
+      const item = preset.templates[index] || fallback;
+      return {
+        id: fallback.id,
+        emoji: String(item.emoji || fallback.emoji).slice(0, 4),
+        name: String(item.name || fallback.name).slice(0, 12),
+        foods: String(item.foods || fallback.foods).slice(0, 80),
+        tip: String(item.tip || fallback.tip).slice(0, 60)
+      };
+    });
+    saveState();
+    renderAll();
+    showToast(`已套用：${preset.name}`);
   }
 
   function renderStats() {
