@@ -493,26 +493,6 @@
     return false;
   }
 
-  function cleanFoodPart(part) {
-    return String(part || "")
-      .replace(/[。；;]+$/g, "")
-      .replace(/^(早上和中午各吃|早餐时吃|如果饿得明显|饿了可|饿了|不够饱|可吃|可加|可以加|可配|配|加|吃|喝|选|任选一|任选|或|再|另|半小时后|10:00 后开始慢慢喝)[:：，,\s]*/g, "")
-      .replace(/^(早餐|午餐|晚餐|早|中|晚|上午|下午|白天|起床后|第一餐前|第一餐|第二餐|第三餐|补充)[:：，,\s]*/g, "")
-      .trim();
-  }
-
-  function splitMealFood(meal) {
-    return String(meal?.food || "")
-      .replace(/；|;/g, "。")
-      .split("。")
-      .flatMap((sentence) => sentence
-        .replace(/：/g, "+")
-        .replace(/，(?=(可加|可以加|可配|或|再|另|加|配|吃|喝))/g, "+")
-        .split(/\s*(?:[+＋、/]|或|以及|和)\s*/g))
-      .map(cleanFoodPart)
-      .filter((part) => part && hasFoodSignal(part) && !isRuleOnly(part));
-  }
-
   function emojiForFood(food) {
     if (/(咖啡|黑咖|奶咖|茶|乌龙|红茶|绿茶|抹茶|可可|dirty)/i.test(food)) return "☕";
     if (/(牛奶|酸奶|豆浆|厚乳|芝士|生酪|奶酪)/.test(food)) return "🥛";
@@ -536,26 +516,94 @@
     ].filter(Boolean);
   }
 
-  function recipeToNine(recipe) {
-    const foodItems = recipe.meals.flatMap((meal) => {
-      const parts = splitMealFood(meal);
-      return parts.map((food, index) => ({
-        slot: parts.length > 1 ? `${meal.slot || "餐次"}${index + 1}` : (meal.slot || "餐次"),
-        food,
-        tip: meal.tag || recipe.series || recipe.sourceLabel
-      }));
+  function mealCategory(meal) {
+    const slot = String(meal?.slot || "");
+    const food = String(meal?.food || "");
+    if (isRuleOnly(food) || !hasFoodSignal(food)) return "rule";
+    if (/(早|早餐|起床|第一餐|白天主饮|白天固体)/.test(slot)) return "breakfast";
+    if (/(午|中午|中$|12\s*点|12点)/.test(slot)) return "lunch";
+    if (/(晚|傍晚|晚上|18[:：]?\d*|5\s*点|5点半|21[:：]?\d*)/.test(slot)) return "dinner";
+    if (/(加餐|下午|补充|不够饱|饿了)/.test(slot)) return "snack";
+    if (/(咖啡|黑咖|牛奶|豆浆|酸奶|吐司|面包|鸡蛋)/.test(food)) return "breakfast";
+    if (/(米饭|饭|午餐|牛肉|鸡腿|鸡胸|鱼|虾)/.test(food)) return "lunch";
+    return "snack";
+  }
+
+  function relatedRecipes(recipe) {
+    const groups = [
+      [recipe],
+      recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp === recipe.sourceApp && item.series === recipe.series),
+      recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp === recipe.sourceApp && item.series !== recipe.series),
+      recipeLibrary.filter((item) => item.id !== recipe.id && item.sourceApp !== recipe.sourceApp)
+    ];
+    const seen = new Set();
+    return groups.flat().filter((item) => {
+      if (!item || seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
     });
-    if (!foodItems.length) {
+  }
+
+  function wholeMealItems(recipe) {
+    return relatedRecipes(recipe).flatMap((sourceRecipe) => sourceRecipe.meals.map((meal) => {
+      const category = mealCategory(meal);
+      return {
+        category,
+        sourceRecipe,
+        slot: meal.slot || "餐次",
+        food: String(meal.food || "").trim(),
+        tip: sourceRecipe.title || sourceRecipe.series || sourceRecipe.sourceLabel,
+        key: `${sourceRecipe.id}:${meal.slot}:${meal.food}`
+      };
+    })).filter((item) => item.category !== "rule");
+  }
+
+  function takeMeals(pool, category, count, used) {
+    const taken = [];
+    for (const item of pool) {
+      if (item.category !== category || used.has(item.key)) continue;
+      used.add(item.key);
+      taken.push(item);
+      if (taken.length === count) break;
+    }
+    return taken;
+  }
+
+  function fillMeals(pool, count, used) {
+    const taken = [];
+    for (const item of pool) {
+      if (used.has(item.key)) continue;
+      used.add(item.key);
+      taken.push(item);
+      if (taken.length === count) break;
+    }
+    return taken;
+  }
+
+  function recipeToNine(recipe) {
+    const pool = wholeMealItems(recipe);
+    if (!pool.length) {
       return DEFAULT_TEMPLATES.map((item) => ({ ...item, fullFood: item.foods }));
     }
-    const originalFoodCount = foodItems.length;
-    while (foodItems.length < 9) {
-      const item = foodItems[foodItems.length % originalFoodCount];
-      foodItems.push({ ...item, slot: `可选${foodItems.length + 1}` });
+    const used = new Set();
+    const breakfasts = takeMeals(pool, "breakfast", 3, used);
+    const lunches = takeMeals(pool, "lunch", 3, used);
+    const dinners = takeMeals(pool, "dinner", 3, used);
+    const plan = [];
+    for (let index = 0; index < 3; index += 1) {
+      if (breakfasts[index]) plan.push({ ...breakfasts[index], label: `早餐${index + 1}` });
+      if (lunches[index]) plan.push({ ...lunches[index], label: `午餐${index + 1}` });
+      if (dinners[index]) plan.push({ ...dinners[index], label: `晚餐${index + 1}` });
     }
-    return foodItems.slice(0, 9).map((item, index) => ({
+    fillMeals(pool, 9 - plan.length, used).forEach((item, index) => plan.push({ ...item, label: `可选${index + 1}` }));
+    const originalPlanCount = plan.length;
+    while (plan.length < 9) {
+      const item = plan[plan.length % originalPlanCount];
+      plan.push({ ...item, label: `可选${plan.length + 1}` });
+    }
+    return plan.slice(0, 9).map((item, index) => ({
       emoji: emojiForFood(item.food),
-      name: String(item.slot || `第${index + 1}顿`).slice(0, 12),
+      name: String(item.label || item.slot || `第${index + 1}顿`).slice(0, 12),
       foods: String(item.food || "").slice(0, 80),
       tip: String(item.tip || recipe.title || "").slice(0, 60),
       fullFood: String(item.food || "")
