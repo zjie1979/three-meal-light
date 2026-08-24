@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="format-detection" content="telephone=no" />
     <meta name="theme-color" content="#f7f3e9" />
     <meta name="color-scheme" content="light" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -10,13 +11,52 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="三餐九选" />
     <meta name="description" content="9顿一轮的简单饮食打卡，可自定义每一顿并统计累计完成轮数。" />
-    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest?v=nozoom-20260824" />
     <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./icons/icon.svg" />
     <link rel="stylesheet" href="./styles.css" />
     <title>三餐九选</title>
+    <style data-app-zoom-lock>
+      html {
+        -webkit-text-size-adjust: 100%;
+        touch-action: manipulation;
+        overscroll-behavior: none;
+      }
+
+      body {
+        overscroll-behavior: none;
+      }
+
+      button,
+      a,
+      input,
+      textarea,
+      select,
+      [role="button"] {
+        touch-action: manipulation;
+      }
+    </style>
+    <script data-app-zoom-lock>
+      (function () {
+        var lastTouchEnd = 0;
+        var preventZoom = function (event) {
+          event.preventDefault();
+        };
+
+        document.addEventListener("gesturestart", preventZoom, { passive: false });
+        document.addEventListener("gesturechange", preventZoom, { passive: false });
+        document.addEventListener("gestureend", preventZoom, { passive: false });
+        document.addEventListener("touchend", function (event) {
+          var now = Date.now();
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, { passive: false });
+      })();
+    </script>
   </head>
   <body>
     <div class="app-shell">
