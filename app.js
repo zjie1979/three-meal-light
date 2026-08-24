@@ -582,37 +582,36 @@
 
   function mealDisplayName(food) {
     const value = String(food || "");
-    const names = [];
-    [
-      ["黑咖啡", /黑咖啡|黑咖|美式|咖啡/],
-      ["奶咖", /奶咖/],
-      ["牛奶", /牛奶/],
-      ["酸奶", /酸奶/],
-      ["豆浆", /豆浆/],
-      ["乌龙茶", /乌龙茶|绿茶|红茶|茶/],
-      ["鸡蛋", /鸡蛋|煎蛋|蒸蛋|蛋白|蛋/],
-      ["鸡胸", /鸡胸/],
-      ["鸡腿", /鸡腿/],
-      ["鸡肉", /鸡肉|黄焖鸡|鸡/],
-      ["牛肉", /牛肉|牛腱/],
-      ["鱼虾", /三文鱼|鱼|虾/],
-      ["豆腐", /豆腐|豆干|豆腐干/],
-      ["米饭", /米饭|杂粮饭|饭/],
-      ["面包", /吐司|面包|贝果|三明治|汉堡/],
-      ["馒头", /馒头/],
-      ["水饺", /水饺|云吞/],
-      ["土豆", /土豆|冷藏土豆/],
-      ["红薯", /红薯|紫薯|小红薯/],
-      ["玉米", /玉米/],
-      ["南瓜", /南瓜|贝贝南瓜/],
-      ["燕麦", /燕麦/],
-      ["香蕉", /香蕉/],
-      ["水果", /苹果|蓝莓|梨|火龙果|水果/],
-      ["蔬菜", /蔬菜|番茄|黄瓜|青菜|菠菜|菌菇|香菇|木耳|白菜|娃娃菜|丝瓜|冬瓜|包菜|洋葱/]
-    ].forEach(([name, pattern]) => {
-      if (pattern.test(value) && !names.includes(name)) names.push(name);
+    const terms = [
+      "无糖酸奶", "内酯豆腐", "番茄炒蛋", "全麦吐司", "杂粮饭", "小红薯", "冷藏土豆",
+      "黑咖啡", "生可可粉", "鸡腿肉", "三文鱼", "燕麦饼", "火龙果", "贝贝南瓜",
+      "奶咖", "牛奶", "酸奶", "豆浆", "乌龙茶", "绿茶", "红茶", "咖啡", "可可粉",
+      "鸡蛋", "煎蛋", "蒸蛋", "蛋白", "鸡胸", "鸡腿", "鸡肉", "黄焖鸡",
+      "虾仁", "牛肉", "牛腱", "鱼肉", "虾", "鱼", "豆腐干", "豆干", "豆腐",
+      "米饭", "吐司", "面包", "馒头", "三明治", "汉堡", "贝果", "水饺", "云吞",
+      "土豆", "红薯", "紫薯", "玉米", "南瓜", "芋头", "燕麦",
+      "香蕉", "苹果", "蓝莓", "梨", "水果",
+      "番茄", "黄瓜", "蔬菜", "青菜", "菠菜", "菌菇", "香菇", "木耳", "白菜", "娃娃菜", "丝瓜", "冬瓜", "包菜", "洋葱", "椰子水"
+    ];
+    const found = [];
+    terms.forEach((term) => {
+      const index = value.indexOf(term);
+      if (index >= 0) found.push({ term, index });
     });
-    if (names.length) return names.slice(0, 3).join("+");
+    const names = found
+      .sort((a, b) => a.index - b.index || b.term.length - a.term.length)
+      .map((item) => item.term)
+      .filter((term, index, list) => list.indexOf(term) === index)
+      .filter((term, index, list) => !list.some((other, otherIndex) => otherIndex < index && other.includes(term)));
+    if (names.length) {
+      const title = [];
+      for (const name of names) {
+        const next = [...title, name].join("/");
+        if (next.length > 12 && title.length) break;
+        title.push(name);
+      }
+      return title.join("/");
+    }
     return value
       .replace(/[。；;].*$/g, "")
       .replace(/[，,].*$/g, "")
