@@ -1,10 +1,13 @@
-const CACHE_NAME = "three-meal-light-v6-custom-presets";
+const CACHE_NAME = "three-meal-light-v7-icon-refresh";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
+  "./icons/apple-touch-icon.png",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
   "./icons/icon.svg"
 ];
 

@@ -1,22 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="76" y1="47" x2="436" y2="466" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#3F8B70"/>
-      <stop offset="1" stop-color="#1E5D4A"/>
+    <linearGradient id="bg" x1="92" y1="48" x2="420" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F876A"/>
+      <stop offset=".58" stop-color="#206F58"/>
+      <stop offset="1" stop-color="#174D40"/>
     </linearGradient>
-    <filter id="shadow" x="80" y="86" width="368" height="376" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#10392E" flood-opacity=".22"/>
+    <linearGradient id="plate" x1="136" y1="114" x2="376" y2="398" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDF6"/>
+      <stop offset="1" stop-color="#F5EBD5"/>
+    </linearGradient>
+    <filter id="softShadow" x="72" y="70" width="368" height="382" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0D382F" flood-opacity=".24"/>
     </filter>
   </defs>
-  <rect width="512" height="512" rx="118" fill="#F7F3E9"/>
-  <circle cx="256" cy="256" r="190" fill="url(#bg)"/>
-  <g filter="url(#shadow)">
-    <circle cx="255.5" cy="268.5" r="126.5" fill="#FFFDF8"/>
-    <path d="M255 153a116 116 0 0 0-110 80h110v-80Z" fill="#CFE8D7"/>
-    <path d="M145 244a116 116 0 0 0 110 141V244H145Z" fill="#AFD8BE"/>
-    <path d="M266 153a116 116 0 0 1 110 80H266v-80Z" fill="#F5C8B8"/>
-    <path d="M266 244h110a116 116 0 0 1-110 141V244Z" fill="#F7DEA0"/>
-    <path d="M256 139v253M132 238h248" stroke="#FFFDF8" stroke-width="13"/>
+  <rect width="512" height="512" rx="118" fill="#F8F1E4"/>
+  <rect x="38" y="38" width="436" height="436" rx="106" fill="url(#bg)"/>
+  <path d="M104 101c44-15 84-7 112 18-41 12-76 5-112-18Z" fill="#DDEFA8" opacity=".92"/>
+  <path d="M405 388c-38 19-78 18-110-1 37-16 71-16 110 1Z" fill="#F3C96C" opacity=".72"/>
+  <g filter="url(#softShadow)">
+    <rect x="116" y="108" width="280" height="296" rx="82" fill="url(#plate)"/>
+    <rect x="140" y="132" width="232" height="248" rx="62" fill="#FFF9EC"/>
+    <text x="256" y="283" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',Arial,sans-serif" font-size="180" font-weight="900" fill="#173D34">9</text>
+    <g fill="#2F876A" opacity=".95">
+      <circle cx="176" cy="329" r="10"/>
+      <circle cx="216" cy="329" r="10"/>
+      <circle cx="256" cy="329" r="10"/>
+      <circle cx="296" cy="329" r="10"/>
+      <circle cx="336" cy="329" r="10"/>
+    </g>
+    <g fill="#F0BE5B">
+      <circle cx="196" cy="354" r="10"/>
+      <circle cx="236" cy="354" r="10"/>
+      <circle cx="276" cy="354" r="10"/>
+      <circle cx="316" cy="354" r="10"/>
+    </g>
   </g>
-  <path d="M373 111c35 6 52 23 56 54-32 4-55-10-62-40-5 24-17 43-38 57" fill="#CDE7A3" stroke="#CDE7A3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="363" cy="363" r="50" fill="#F0BE5B"/>
+  <path d="M341 362l16 16 31-38" fill="none" stroke="#173D34" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
