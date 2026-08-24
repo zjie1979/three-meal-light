@@ -28,9 +28,12 @@ body {
     radial-gradient(circle at 96% 14%, rgba(68, 145, 113, 0.17), transparent 25rem),
     var(--paper);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+  touch-action: pan-y;
 }
 button, input, textarea { color: inherit; font: inherit; outline: none; }
-button { cursor: pointer; }
+button { cursor: pointer; touch-action: manipulation; }
 button:focus-visible, input:focus-visible, textarea:focus-visible { box-shadow: 0 0 0 3px rgba(40, 118, 93, 0.22); }
 
 .app-shell { width: min(100%, 560px); min-height: 100vh; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 18px calc(104px + var(--safe-bottom)); overflow: hidden; }

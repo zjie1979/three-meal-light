@@ -671,6 +671,7 @@
   }
 
   function bindEvents() {
+    lockViewportScale();
     $$(".nav-item").forEach((button) => button.addEventListener("click", () => navigateTo(button.dataset.target)));
     $("#undoLastButton").addEventListener("click", undoLastMeal);
     $("#resetRoundButton").addEventListener("click", resetCurrentRound);
@@ -687,6 +688,18 @@
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeSheets(); });
     window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); installPrompt = event; });
     window.addEventListener("appinstalled", () => showToast("已安装到主屏幕"));
+  }
+
+  function lockViewportScale() {
+    let lastTouchEnd = 0;
+    document.addEventListener("gesturestart", (event) => event.preventDefault(), { passive: false });
+    document.addEventListener("gesturechange", (event) => event.preventDefault(), { passive: false });
+    document.addEventListener("gestureend", (event) => event.preventDefault(), { passive: false });
+    document.addEventListener("touchend", (event) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 350) event.preventDefault();
+      lastTouchEnd = now;
+    }, { passive: false });
   }
 
   saveState();
