@@ -580,6 +580,46 @@
     return taken;
   }
 
+  function mealDisplayName(food) {
+    const value = String(food || "");
+    const names = [];
+    [
+      ["黑咖啡", /黑咖啡|黑咖|美式|咖啡/],
+      ["奶咖", /奶咖/],
+      ["牛奶", /牛奶/],
+      ["酸奶", /酸奶/],
+      ["豆浆", /豆浆/],
+      ["乌龙茶", /乌龙茶|绿茶|红茶|茶/],
+      ["鸡蛋", /鸡蛋|煎蛋|蒸蛋|蛋白|蛋/],
+      ["鸡胸", /鸡胸/],
+      ["鸡腿", /鸡腿/],
+      ["鸡肉", /鸡肉|黄焖鸡|鸡/],
+      ["牛肉", /牛肉|牛腱/],
+      ["鱼虾", /三文鱼|鱼|虾/],
+      ["豆腐", /豆腐|豆干|豆腐干/],
+      ["米饭", /米饭|杂粮饭|饭/],
+      ["面包", /吐司|面包|贝果|三明治|汉堡/],
+      ["馒头", /馒头/],
+      ["水饺", /水饺|云吞/],
+      ["土豆", /土豆|冷藏土豆/],
+      ["红薯", /红薯|紫薯|小红薯/],
+      ["玉米", /玉米/],
+      ["南瓜", /南瓜|贝贝南瓜/],
+      ["燕麦", /燕麦/],
+      ["香蕉", /香蕉/],
+      ["水果", /苹果|蓝莓|梨|火龙果|水果/],
+      ["蔬菜", /蔬菜|番茄|黄瓜|青菜|菠菜|菌菇|香菇|木耳|白菜|娃娃菜|丝瓜|冬瓜|包菜|洋葱/]
+    ].forEach(([name, pattern]) => {
+      if (pattern.test(value) && !names.includes(name)) names.push(name);
+    });
+    if (names.length) return names.slice(0, 3).join("+");
+    return value
+      .replace(/[。；;].*$/g, "")
+      .replace(/[，,].*$/g, "")
+      .replace(/\s+/g, "")
+      .slice(0, 12) || "食谱";
+  }
+
   function recipeToNine(recipe) {
     const pool = wholeMealItems(recipe);
     if (!pool.length) {
@@ -603,7 +643,7 @@
     }
     return plan.slice(0, 9).map((item, index) => ({
       emoji: emojiForFood(item.food),
-      name: String(item.label || item.slot || `第${index + 1}顿`).slice(0, 12),
+      name: mealDisplayName(item.food).slice(0, 12),
       foods: String(item.food || "").slice(0, 80),
       tip: String(item.tip || recipe.title || "").slice(0, 60),
       fullFood: String(item.food || "")
