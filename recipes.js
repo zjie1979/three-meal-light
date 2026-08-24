@@ -420,5 +420,185 @@ window.RECIPE_LIBRARY = [
       { slot: "晚餐", food: "虾5-10只 + 蔬菜 + 平菇，少油少酱。", tag: "估150-250卡" }
     ],
     rules: ["虾按中小只估算；油多或蘸料重会明显加热量。"]
+  },
+  {
+    id: "strawberry-egg-milk-nuts",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "平常稳餐",
+    title: "鸡蛋牛奶坚果",
+    summary: "估算约230-300大卡。鸡蛋2个、少量牛奶和少量坚果。",
+    fit: "适合早餐想吃得稳一点。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估230-300",
+    meals: [
+      { slot: "早餐", food: "鸡蛋2个 + 牛奶100ml + 核桃2个或巴旦木4个。", tag: "估230-300卡" }
+    ],
+    rules: ["坚果按少量估算；坚果多放会很快超过300卡。"]
+  },
+  {
+    id: "strawberry-tomato-egg-veggie",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "平常稳餐",
+    title: "番茄蛋蔬菜",
+    summary: "估算约180-280大卡。番茄蛋类清淡晚餐，加木耳、娃娃菜或香菇。",
+    fit: "适合晚餐想吃热菜但不想太重。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估180-280",
+    meals: [
+      { slot: "晚餐", food: "番茄炒蛋或番茄蛋汤 + 木耳、娃娃菜、香菇或丝瓜。", tag: "估180-280卡" }
+    ],
+    rules: ["鸡蛋控制1-2个，少油炒或煮汤更稳。"]
+  },
+  {
+    id: "strawberry-eggs-soymilk",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "平常稳餐",
+    title: "鸡蛋豆浆",
+    summary: "估算约220-300大卡。鸡蛋2个，或豆浆加牛奶的小份组合。",
+    fit: "适合早上或中午不想复杂准备。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估220-300",
+    meals: [
+      { slot: "早餐", food: "鸡蛋2个，或无糖豆浆150ml + 牛奶100ml。", tag: "估220-300卡" }
+    ],
+    rules: ["豆浆和牛奶都选无糖；两种方案二选一。"]
+  },
+  {
+    id: "strawberry-beef-yogurt",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "平常稳餐",
+    title: "牛肉无糖酸奶",
+    summary: "估算约240-300大卡。小份牛肉配无糖酸奶。",
+    fit: "适合晚餐想吃蛋白质但不想吃主食。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估240-300",
+    meals: [
+      { slot: "晚餐", food: "瘦牛肉80-100g + 无糖酸奶100g。", tag: "估240-300卡" }
+    ],
+    rules: ["牛肉按瘦牛肉估算；肥牛或重油煎会超过300卡。"]
+  },
+  {
+    id: "strawberry-egg-coffee",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "平常稳餐",
+    title: "鸡蛋咖啡",
+    summary: "估算约140-220大卡。鸡蛋2个配无糖咖啡。",
+    fit: "适合很简单的早餐或轻午餐。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估140-220",
+    meals: [
+      { slot: "早餐", food: "鸡蛋2个 + 黑咖啡1杯。", tag: "估140-220卡" }
+    ],
+    rules: ["咖啡不加糖；加奶油或糖浆不按300卡内处理。"]
+  },
+  {
+    id: "strawberry-sweet-potato-chicken",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "粗粮蛋白",
+    title: "红薯鸡胸蔬菜",
+    summary: "估算约250-300大卡。小份红薯或玉米配鸡胸和蔬菜。",
+    fit: "适合需要一点主食和蛋白质的一餐。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估250-300",
+    meals: [
+      { slot: "午餐", food: "红薯、紫薯或玉米100g + 鸡胸肉80-100g + 蔬菜。", tag: "估250-300卡" }
+    ],
+    rules: ["粗粮和鸡胸都按小份量；主食加到一整根大红薯会超。"]
+  },
+  {
+    id: "strawberry-shrimp-sweet-potato",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "粗粮蛋白",
+    title: "虾仁红薯玉米",
+    summary: "估算约220-300大卡。虾仁或牛肉配小份红薯、玉米。",
+    fit: "适合晚餐想吃一点主食但不想太多。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估220-300",
+    meals: [
+      { slot: "晚餐", food: "虾100g或瘦牛肉80g + 红薯或玉米100g。", tag: "估220-300卡" }
+    ],
+    rules: ["虾和牛肉二选一；牛肉要选瘦肉小份。"]
+  },
+  {
+    id: "strawberry-toast-egg-milk",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "吐司轻餐",
+    title: "吐司鸡蛋豆浆",
+    summary: "估算约230-300大卡。全麦吐司、鸡蛋和豆浆或牛奶。",
+    fit: "适合想吃主食口感的早餐。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估230-300",
+    meals: [
+      { slot: "早餐", food: "全麦吐司1片 + 鸡蛋1个 + 无糖豆浆或牛奶1杯。", tag: "估230-300卡" }
+    ],
+    rules: ["花生酱如果要抹，只能薄薄一点；厚抹会超300卡。"]
+  },
+  {
+    id: "strawberry-egg-milk-coffee",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "暴食后恢复",
+    title: "鸡蛋奶咖",
+    summary: "估算约150-250大卡。鸡蛋配少奶咖啡。",
+    fit: "适合吃多后的次日第一餐。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估150-250",
+    meals: [
+      { slot: "早餐", food: "鸡蛋1个 + 咖啡1杯，可加少量牛奶。", tag: "估150-250卡" }
+    ],
+    rules: ["咖啡只加少量牛奶，不加糖浆、奶油和甜奶。"]
+  },
+  {
+    id: "strawberry-egg-cucumber",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "暴食后恢复",
+    title: "鸡蛋黄瓜",
+    summary: "估算约100-180大卡。鸡蛋配黄瓜，偏清淡恢复餐。",
+    fit: "适合前一天吃撑后想轻一点。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估100-180",
+    meals: [
+      { slot: "第一餐", food: "鸡蛋1个 + 黄瓜1根，或少油黄瓜炒蛋。", tag: "估100-180卡" }
+    ],
+    rules: ["这餐偏轻；不舒服或明显饿，不要硬撑。"]
+  },
+  {
+    id: "strawberry-yogurt-fruit",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "暴食后恢复",
+    title: "酸奶水果",
+    summary: "估算约120-220大卡。无糖酸奶配半份水果。",
+    fit: "适合下午轻加餐或恢复日小餐。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估120-220",
+    meals: [
+      { slot: "下午", food: "无糖酸奶100g + 半个火龙果、半个苹果或少量蓝莓。", tag: "估120-220卡" }
+    ],
+    rules: ["水果半份即可；风味酸奶和甜酸奶热量另算。"]
+  },
+  {
+    id: "strawberry-chicken-cucumber-tomato",
+    sourceApp: "strawberry-300",
+    sourceLabel: "一颗草莓300卡",
+    series: "暴食后恢复",
+    title: "鸡胸黄瓜番茄",
+    summary: "估算约180-280大卡。鸡胸或去皮鸡腿配黄瓜番茄。",
+    fit: "适合恢复日傍晚正餐。",
+    sourceText: "旧一颗草莓/草莓饮食独立App资料整理，热量为按小份量估算。",
+    kcal: "估180-280",
+    meals: [
+      { slot: "晚餐", food: "鸡胸肉100g或去皮鸡腿肉100g + 黄瓜或番茄1份。", tag: "估180-280卡" }
+    ],
+    rules: ["鸡腿要去皮；煎炒少油，不加重酱。"]
   }
 ];
