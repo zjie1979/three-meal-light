@@ -97,6 +97,7 @@
     recipeSheetTitle: $("#recipeSheetTitle"),
     recipeSheetSummary: $("#recipeSheetSummary"),
     recipeNineList: $("#recipeNineList"),
+    recipeRules: $("#recipeRules"),
     applyRecipeButton: $("#applyRecipeButton"),
     toast: $("#toast"),
     celebrationCanvas: $("#celebrationCanvas")
@@ -473,35 +474,87 @@
     $$("[data-open-recipe]", refs.recipeList).forEach((button) => button.addEventListener("click", () => openRecipe(button.dataset.openRecipe)));
   }
 
+  function hasFoodSignal(text) {
+    return /(蛋|鸡|牛|鱼|虾|肉|豆腐|豆干|豆浆|酸奶|牛奶|奶咖|咖啡|黑咖|茶|乌龙|红茶|绿茶|抹茶|可可|dirty|厚乳|芝士|生酪|奶酪|米饭|饭|粥|面|粉|吐司|面包|馒头|贝果|三明治|汉堡|水饺|云吞|土豆|红薯|紫薯|玉米|南瓜|芋头|燕麦|水果|苹果|香蕉|梨|蓝莓|莓|番茄|黄瓜|蔬菜|青菜|菠菜|菌菇|香菇|木耳|白菜|娃娃菜|丝瓜|冬瓜|包菜|洋葱|椰子水)/i.test(text);
+  }
+
+  function isHydrationOnly(text) {
+    const value = text.replace(/\s/g, "");
+    if (/(咖啡|黑咖|奶咖|牛奶|酸奶|豆浆|茶|乌龙|红茶|绿茶|抹茶|可可|椰子水)/.test(value)) return false;
+    return /^(全天)?(约|喝|饮)?(温水|清水|水|柠檬水|饮水)[\d.一二三四五六七八九十\-~到左右杯升lL毫mlML，,。；;]*$/.test(value)
+      || /全天喝水|喝水\d|饮水\d/.test(value);
+  }
+
+  function isRuleOnly(text) {
+    if (isHydrationOnly(text)) return true;
+    if (/^(短期|不要|不建议|不主动|不替代|遵循|按原|当天手动|这是短期|原文|低血糖|胃不舒服)/.test(text)) return true;
+    if (/(不用刻意|不要因为|不额外加|不加零食|不加薯片|少酱更稳|停止进食|连续\s*1-2\s*天|不列入打卡|可适当加|不舒服时不要硬撑)/.test(text)) return true;
+    if (/^(规则|提醒|口径|补充)$/.test(text)) return true;
+    return false;
+  }
+
+  function cleanFoodPart(part) {
+    return String(part || "")
+      .replace(/[。；;]+$/g, "")
+      .replace(/^(早上和中午各吃|早餐时吃|如果饿得明显|饿了可|饿了|不够饱|可吃|可加|可以加|可配|配|加|吃|喝|选|任选一|任选|或|再|另|半小时后|10:00 后开始慢慢喝)[:：，,\s]*/g, "")
+      .replace(/^(早餐|午餐|晚餐|早|中|晚|上午|下午|白天|起床后|第一餐前|第一餐|第二餐|第三餐|补充)[:：，,\s]*/g, "")
+      .trim();
+  }
+
+  function splitMealFood(meal) {
+    return String(meal?.food || "")
+      .replace(/；|;/g, "。")
+      .split("。")
+      .flatMap((sentence) => sentence
+        .replace(/：/g, "+")
+        .replace(/，(?=(可加|可以加|可配|或|再|另|加|配|吃|喝))/g, "+")
+        .split(/\s*(?:[+＋、/]|或|以及|和)\s*/g))
+      .map(cleanFoodPart)
+      .filter((part) => part && hasFoodSignal(part) && !isRuleOnly(part));
+  }
+
+  function emojiForFood(food) {
+    if (/(咖啡|黑咖|奶咖|茶|乌龙|红茶|绿茶|抹茶|可可|dirty)/i.test(food)) return "☕";
+    if (/(牛奶|酸奶|豆浆|厚乳|芝士|生酪|奶酪)/.test(food)) return "🥛";
+    if (/蛋/.test(food)) return "🥚";
+    if (/(鸡胸|鸡腿|鸡肉|黄焖鸡|鸡)/.test(food)) return "🐔";
+    if (/(虾|鱼|三文鱼)/.test(food)) return "🐟";
+    if (/(牛|肉)/.test(food)) return "🥩";
+    if (/(米饭|饭|粥|面|粉|吐司|面包|馒头|贝果|三明治|汉堡|水饺|云吞)/.test(food)) return "🍚";
+    if (/(土豆|红薯|紫薯|玉米|南瓜|芋头|燕麦)/.test(food)) return "🍠";
+    if (/(苹果|香蕉|梨|蓝莓|莓|水果|火龙果)/.test(food)) return "🍌";
+    if (/(番茄|黄瓜|蔬菜|青菜|菠菜|菌菇|香菇|木耳|白菜|娃娃菜|丝瓜|冬瓜|包菜|洋葱)/.test(food)) return "🥬";
+    return "🍽️";
+  }
+
+  function recipeRules(recipe) {
+    return [
+      ...recipe.meals
+        .filter((meal) => meal.slot === "全天" || isRuleOnly(meal.food))
+        .map((meal) => `${meal.slot || "提醒"}：${meal.food}`),
+      ...(Array.isArray(recipe.rules) ? recipe.rules : [])
+    ].filter(Boolean);
+  }
+
   function recipeToNine(recipe) {
-    const sourceItems = [
-      ...recipe.meals.map((meal) => ({
-        slot: meal.slot || "餐次",
-        food: meal.food,
+    const foodItems = recipe.meals.flatMap((meal) => {
+      const parts = splitMealFood(meal);
+      return parts.map((food, index) => ({
+        slot: parts.length > 1 ? `${meal.slot || "餐次"}${index + 1}` : (meal.slot || "餐次"),
+        food,
         tip: meal.tag || recipe.series || recipe.sourceLabel
-      })),
-      ...recipe.rules.map((rule, index) => ({
-        slot: `规则${index + 1}`,
-        food: rule,
-        tip: "按原食谱规则执行"
-      }))
-    ].filter((item) => item.food);
-    const fallbackTips = [
-      "未写额外食物，不主动加餐。",
-      "饿、头晕或不舒服时停止硬跟。",
-      "饮水按口渴和身体状态来。",
-      "当天不叠加甜品、奶茶和夜宵。",
-      "这格用于提醒，不是新增食物。"
-    ];
-    while (sourceItems.length < 9) {
-      sourceItems.push({
-        slot: "提醒",
-        food: fallbackTips[(sourceItems.length - recipe.meals.length) % fallbackTips.length],
-        tip: "补足9格，便于打卡"
-      });
+      }));
+    });
+    if (!foodItems.length) {
+      return DEFAULT_TEMPLATES.map((item) => ({ ...item, fullFood: item.foods }));
     }
-    return sourceItems.slice(0, 9).map((item, index) => ({
-      emoji: index < 3 ? "🍽️" : index < 6 ? "🥗" : "✅",
+    const originalFoodCount = foodItems.length;
+    while (foodItems.length < 9) {
+      const item = foodItems[foodItems.length % originalFoodCount];
+      foodItems.push({ ...item, slot: `可选${foodItems.length + 1}` });
+    }
+    return foodItems.slice(0, 9).map((item, index) => ({
+      emoji: emojiForFood(item.food),
       name: String(item.slot || `第${index + 1}顿`).slice(0, 12),
       foods: String(item.food || "").slice(0, 80),
       tip: String(item.tip || recipe.title || "").slice(0, 60),
@@ -522,6 +575,11 @@
         <b>${index + 1}</b>
         <div><strong>${escapeHtml(item.name)}</strong><p>${escapeHtml(item.fullFood || item.foods)}</p></div>
       </article>`).join("");
+    const rules = recipeRules(recipe);
+    refs.recipeRules.hidden = !rules.length;
+    refs.recipeRules.innerHTML = rules.length
+      ? `<strong>原食谱提醒</strong><ul>${rules.slice(0, 4).map((rule) => `<li>${escapeHtml(rule)}</li>`).join("")}</ul>`
+      : "";
     showSheet(refs.recipeSheet);
   }
 
