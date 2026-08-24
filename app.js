@@ -437,7 +437,7 @@
       refs.recipeSourceTabs.innerHTML = "";
       refs.recipeSeriesTabs.innerHTML = "";
       refs.recipeCount.textContent = "";
-      refs.recipeList.innerHTML = '<div class="empty-state">还没有导入旧App食谱。</div>';
+      refs.recipeList.innerHTML = '<div class="empty-state">还没有导入食谱。</div>';
       return;
     }
     if (!recipeSources.some((source) => source.id === activeRecipeSource)) activeRecipeSource = recipeSources[0].id;
@@ -625,10 +625,17 @@
       return DEFAULT_TEMPLATES.map((item) => ({ ...item, fullFood: item.foods }));
     }
     const used = new Set();
-    const breakfasts = takeMeals(pool, "breakfast", 3, used);
-    const lunches = takeMeals(pool, "lunch", 3, used);
-    const dinners = takeMeals(pool, "dinner", 3, used);
-    const plan = [];
+    const plan = pool.filter((item) => item.sourceRecipe.id === recipe.id).slice(0, 2);
+    plan.forEach((item) => used.add(item.key));
+    const targets = { breakfast: 3, lunch: 3, dinner: 3 };
+    plan.forEach((item) => {
+      if (Object.prototype.hasOwnProperty.call(targets, item.category)) {
+        targets[item.category] = Math.max(0, targets[item.category] - 1);
+      }
+    });
+    const breakfasts = takeMeals(pool, "breakfast", targets.breakfast, used);
+    const lunches = takeMeals(pool, "lunch", targets.lunch, used);
+    const dinners = takeMeals(pool, "dinner", targets.dinner, used);
     for (let index = 0; index < 3; index += 1) {
       if (breakfasts[index]) plan.push({ ...breakfasts[index], label: `早餐${index + 1}` });
       if (lunches[index]) plan.push({ ...lunches[index], label: `午餐${index + 1}` });
