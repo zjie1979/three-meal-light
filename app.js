@@ -8,22 +8,26 @@
     dinner: { name: "晚餐", icon: "🌙", color: "#5D8FA8", defaultTemplateId: "meal-5" }
   };
   const DEFAULT_TEMPLATES = [
-    { id: "meal-1", emoji: "🥚", name: "控糖早餐", foods: "鸡蛋 + 无糖牛奶或豆浆 + 适量玉米、全麦面包等主食", tip: "先保证蛋白质，少选甜饮和甜面包。" },
-    { id: "meal-2", emoji: "🥣", name: "高蛋白早餐", foods: "无糖酸奶或豆浆 + 鸡蛋或豆制品 + 一小份水果", tip: "水果正常吃，果汁不能替代完整水果。" },
-    { id: "meal-3", emoji: "🌽", name: "轻食早餐", foods: "燕麦、玉米或红薯 + 蛋白质 + 一份水果", tip: "轻食不是只吃水果，要搭配蛋白质。" },
-    { id: "meal-4", emoji: "🍱", name: "家常均衡餐", foods: "半盘蔬菜 + 一掌蛋白质 + 一拳主食", tip: "正常吃饭，吃到七八分饱就停。" },
-    { id: "meal-5", emoji: "🐟", name: "清爽蒸煮餐", foods: "蒸煮蔬菜 + 鱼、鸡肉或豆腐 + 少量主食", tip: "清淡不等于无油，少油但不必完全去油。" },
-    { id: "meal-6", emoji: "🥡", name: "外卖减负餐", foods: "少饭 + 双份蔬菜 + 一份非油炸蛋白质", tip: "酱汁分开、少喝浓汤，饱腹会更稳。" },
-    { id: "meal-7", emoji: "🍜", name: "面食搭配餐", foods: "小份面或粉 + 双份蔬菜 + 鸡蛋、肉或豆制品", tip: "少喝汤底，不必为了减脂完全戒面。" },
-    { id: "meal-8", emoji: "🥘", name: "火锅聪明餐", foods: "蔬菜菌菇 + 瘦肉或豆制品 + 适量主食", tip: "少蘸料、少加工丸子，按正常饭量吃。" },
-    { id: "meal-9", emoji: "😋", name: "自由满足餐", foods: "正常吃喜欢的食物 + 蔬菜或蛋白质 + 无糖饮", tip: "不补偿、不放纵，满足后七八分饱停下。" }
+    { id: "meal-1", emoji: "🥔", name: "土豆", foods: "蒸土豆、烤土豆或少油土豆块", tip: "当主食吃，别再叠加太多米饭面条。" },
+    { id: "meal-2", emoji: "🥣", name: "无糖酸奶", foods: "无糖酸奶，可以加少量水果或燕麦", tip: "优先选无糖，太甜的酸奶按甜品看。" },
+    { id: "meal-3", emoji: "🐔", name: "鸡胸肉", foods: "鸡胸肉、鸡腿去皮或低油鸡肉", tip: "蛋白质够了，饱腹会更稳。" },
+    { id: "meal-4", emoji: "🥚", name: "鸡蛋", foods: "水煮蛋、蒸蛋或少油煎蛋", tip: "简单好执行，一餐配1到2个就够用。" },
+    { id: "meal-5", emoji: "🌽", name: "玉米红薯", foods: "玉米、红薯、南瓜等粗粮主食", tip: "这类也算主食，份量适中就行。" },
+    { id: "meal-6", emoji: "🥬", name: "蔬菜", foods: "青菜、番茄、黄瓜、菌菇等", tip: "用来补体积和饱腹，不要只吃菜。" },
+    { id: "meal-7", emoji: "🐟", name: "鱼虾牛肉", foods: "鱼、虾、瘦牛肉或豆腐", tip: "换着吃，别把一餐弄得太复杂。" },
+    { id: "meal-8", emoji: "🍎", name: "水果", foods: "苹果、橙子、莓果等一小份水果", tip: "完整水果可以，果汁不算。" },
+    { id: "meal-9", emoji: "🍚", name: "正常饭菜", foods: "正常吃一小份饭菜，少油少汤", tip: "外食时就选这一项，吃到七八分饱。" }
+  ];
+  const LEGACY_DEFAULT_TEMPLATE_NAMES = [
+    "控糖早餐", "高蛋白早餐", "轻食早餐", "家常均衡餐", "清爽蒸煮餐",
+    "外卖减负餐", "面食搭配餐", "火锅聪明餐", "自由满足餐"
   ];
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const cloneTemplates = () => DEFAULT_TEMPLATES.map((item) => ({ ...item }));
   const defaultState = () => ({
-    version: 2,
+    version: 3,
     templates: cloneTemplates(),
     settings: { times: { breakfast: "08:00", lunch: "12:30", dinner: "18:30" } },
     days: {}
@@ -100,6 +104,29 @@
     });
   }
 
+  function migrateV2(saved) {
+    const fallback = defaultState();
+    const savedTemplates = Array.isArray(saved.templates) ? saved.templates : [];
+    return {
+      version: 3,
+      templates: DEFAULT_TEMPLATES.map((simpleTemplate, index) => {
+        const savedTemplate = savedTemplates.find((item) => item?.id === simpleTemplate.id) || savedTemplates[index];
+        const wasLegacyDefault = !savedTemplate || LEGACY_DEFAULT_TEMPLATE_NAMES.includes(savedTemplate.name);
+        return wasLegacyDefault ? { ...simpleTemplate } : {
+          ...simpleTemplate,
+          ...savedTemplate,
+          id: simpleTemplate.id,
+          emoji: String(savedTemplate?.emoji || simpleTemplate.emoji).slice(0, 4),
+          name: String(savedTemplate?.name || simpleTemplate.name).slice(0, 12),
+          foods: String(savedTemplate?.foods || simpleTemplate.foods).slice(0, 80),
+          tip: String(savedTemplate?.tip || simpleTemplate.tip).slice(0, 60)
+        };
+      }),
+      settings: { times: { ...fallback.settings.times, ...(saved.settings?.times || {}) } },
+      days: saved.days || {}
+    };
+  }
+
   function migrateV1(saved) {
     const next = defaultState();
     next.settings.times = { ...next.settings.times, ...(saved.settings?.times || {}) };
@@ -129,10 +156,14 @@
         migratedOnLoad = true;
         return migrateV1(saved);
       }
-      if (saved.version !== 2) return defaultState();
+      if (saved.version === 2) {
+        migratedOnLoad = true;
+        return migrateV2(saved);
+      }
+      if (saved.version !== 3) return defaultState();
       const fallback = defaultState();
       return {
-        version: 2,
+        version: 3,
         templates: normalizeTemplates(saved.templates),
         settings: { times: { ...fallback.settings.times, ...(saved.settings?.times || {}) } },
         days: saved.days || {}
@@ -223,10 +254,10 @@
     updateWeightTrend();
 
     const messages = [
-      ["三餐自己挑，减脂更好坚持", "早餐、午餐、晚餐，都可以从9套方案里任意选择。"],
-      ["第一餐完成了", "下一餐继续从9套里挑，不需要每天完全一样。"],
+      ["每餐就选一个常吃项", "土豆、酸奶、鸡胸肉这些都可以，简单记录就行。"],
+      ["第一餐完成了", "下一餐继续选一个顺手的食物，不用配得很复杂。"],
       ["今天已经完成大半", "正常吃完下一餐，不用为了减重故意挨饿。"],
-      ["今天三餐已完成", "选得适合自己、吃得长期稳定，就是好计划。"]
+      ["今天三餐已完成", "简单、能长期坚持，就是好计划。"]
     ];
     refs.dailyHeadline.textContent = messages[done][0];
     refs.dailyMessage.textContent = messages[done][1];
@@ -243,7 +274,7 @@
             <div class="chosen-copy"><strong>${escapeHtml(template.name)}</strong><p>${escapeHtml(template.foods)}</p></div>
             <span class="template-number">#${number}</span>
           </div>
-          <div class="meal-actions"><button class="pick-button" type="button" data-pick="${slotKey}">换一餐</button><button class="record-button" type="button" data-record="${slotKey}">${record.done ? "修改记录" : "完成这餐"}</button></div>
+          <div class="meal-actions"><button class="pick-button" type="button" data-pick="${slotKey}">换食物</button><button class="record-button" type="button" data-record="${slotKey}">${record.done ? "修改记录" : "完成这餐"}</button></div>
         </article>`;
     }).join("");
 
@@ -275,7 +306,7 @@
 
   function renderLibrary() {
     refs.templateGrid.innerHTML = state.templates.map((template, index) => `
-      <button class="template-card tone-${index + 1}" type="button" data-edit-template="${template.id}" aria-label="编辑第${index + 1}套 ${escapeHtml(template.name)}">
+      <button class="template-card tone-${index + 1}" type="button" data-edit-template="${template.id}" aria-label="编辑第${index + 1}项 ${escapeHtml(template.name)}">
         <span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span><b>${escapeHtml(template.name)}</b><span>${escapeHtml(template.foods)}</span><i class="edit-label">编辑</i>
       </button>`).join("");
     $$('[data-edit-template]', refs.templateGrid).forEach((button) => button.addEventListener("click", () => openEditor(button.dataset.editTemplate)));
@@ -288,7 +319,7 @@
   function openPicker(slotKey) {
     activeSlotKey = slotKey;
     const record = mealRecord(selectedDate, slotKey);
-    refs.pickerEyebrow.textContent = `${SLOTS[slotKey].name} · 任选一套`;
+    refs.pickerEyebrow.textContent = `${SLOTS[slotKey].name} · 选一个常吃项`;
     refs.pickerGrid.innerHTML = state.templates.map((template, index) => `
       <button class="picker-option tone-${index + 1} ${template.id === record.templateId ? "is-selected" : ""}" type="button" data-choose-template="${template.id}">
         <i class="picker-check">✓</i><span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span><b>${index + 1}. ${escapeHtml(template.name)}</b><span>${escapeHtml(template.foods)}</span>
@@ -321,7 +352,7 @@
     refs.recordEyebrow.textContent = `${record.done ? "修改" : "记录"}${SLOTS[slotKey].name}`;
     refs.recordTitle.textContent = template.name;
     refs.selectedPlan.className = `selected-plan tone-${number}`;
-    refs.selectedPlan.innerHTML = `<span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span><div><strong>第${number}套 · ${escapeHtml(template.name)}</strong><p>${escapeHtml(template.foods)}</p><small>${escapeHtml(template.tip)}</small></div>`;
+    refs.selectedPlan.innerHTML = `<span class="template-emoji" aria-hidden="true">${escapeHtml(template.emoji)}</span><div><strong>第${number}项 · ${escapeHtml(template.name)}</strong><p>${escapeHtml(template.foods)}</p><small>${escapeHtml(template.tip)}</small></div>`;
     refs.foodNote.value = record.note || "";
     refs.completeMealButton.textContent = record.done ? "保存修改" : "完成这餐";
     $$('button[data-value]', refs.satietyScale).forEach((button) => button.classList.toggle("is-selected", Number(button.dataset.value) === selectedSatiety));
@@ -363,7 +394,7 @@
     activeTemplateId = templateId;
     const template = templateFor(templateId);
     const number = templateNumber(templateId);
-    refs.editorEyebrow.textContent = `编辑第${number}套`;
+    refs.editorEyebrow.textContent = `编辑第${number}项`;
     refs.templateIdInput.value = template.id;
     refs.templateEmoji.value = template.emoji;
     refs.templateName.value = template.name;
@@ -387,7 +418,7 @@
     saveState();
     closeSheets();
     renderAll();
-    showToast(`第${index + 1}套餐已保存`);
+    showToast(`第${index + 1}项已保存`);
   }
 
   function renderHistory() {
@@ -481,13 +512,13 @@
   }
 
   function resetData() {
-    if (!window.confirm("确定恢复默认9餐并清除全部记录吗？此操作无法撤销，建议先导出备份。")) return;
+    if (!window.confirm("确定恢复默认食物并清除全部记录吗？此操作无法撤销，建议先导出备份。")) return;
     state = defaultState();
     saveState();
     selectedDate = dateKey(new Date());
     renderAll();
     navigateTo("today");
-    showToast("已恢复默认9餐");
+    showToast("已恢复默认食物");
   }
 
   function openInstallFlow() {

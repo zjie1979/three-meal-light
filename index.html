@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="三餐九选" />
-    <meta name="description" content="自定义9套减脂餐，每天为早餐、午餐、晚餐任选一套并完成记录。" />
+    <meta name="description" content="自定义9个常吃食物，每天为早餐、午餐、晚餐各选一个并完成记录。" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./icons/icon.svg" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="./icons/icon.svg" />
@@ -20,7 +20,7 @@
       <header class="topbar">
         <div class="brand" aria-label="三餐九选">
           <span class="brand-mark" aria-hidden="true"><b>9</b></span>
-          <div><strong>三餐九选</strong><span>9套备选，每天选3套</span></div>
+          <div><strong>三餐九选</strong><span>常吃食物，每餐选一个</span></div>
         </div>
         <button class="icon-button" id="installButton" type="button" aria-label="安装到主屏幕" title="安装到主屏幕">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" /></svg>
@@ -39,11 +39,11 @@
 
           <section class="hero-card" aria-labelledby="dailyHeadline">
             <div class="hero-copy">
-              <span class="eyebrow">今天 · 9选3</span>
-              <h1 id="dailyHeadline">三餐自己挑，减脂更好坚持</h1>
-              <p id="dailyMessage">早餐、午餐、晚餐，都可以从9套方案里任意选择。</p>
+              <span class="eyebrow">今天 · 简单选</span>
+              <h1 id="dailyHeadline">每餐就选一个常吃项</h1>
+              <p id="dailyMessage">土豆、酸奶、鸡胸肉这些都可以，简单记录就行。</p>
               <div class="hero-stats">
-                <span><b id="streakCount">0</b> 天连续完成</span><span class="stat-divider"></span><span><b id="customCount">9</b> 套可自定义</span>
+                <span><b id="streakCount">0</b> 天连续完成</span><span class="stat-divider"></span><span><b id="customCount">9</b> 项可自定义</span>
               </div>
             </div>
             <div class="progress-ring" id="progressRing" style="--progress: 0" aria-label="今日完成进度">
@@ -58,21 +58,21 @@
           </section>
 
           <div class="section-heading">
-            <div><span class="eyebrow">今日三餐</span><h2>每餐从9套里任选</h2></div>
+            <div><span class="eyebrow">今日三餐</span><h2>每餐选一个常吃项</h2></div>
             <span class="mini-progress" id="miniProgress">0 / 3</span>
           </div>
           <div class="daily-meal-list" id="dailyMealList"></div>
 
           <section class="gentle-note">
             <span aria-hidden="true">💡</span>
-            <div><strong>同一套餐可以重复选择</strong><p>不需要追求每天都不一样。能长期执行、份量合适，比短期挨饿更重要。</p></div>
+            <div><strong>同一个食物可以重复选</strong><p>不需要每天配得很复杂。能长期执行、份量合适，比短期挨饿更重要。</p></div>
           </section>
         </section>
 
-        <section class="view" data-view="library" aria-label="9餐库">
+        <section class="view" data-view="library" aria-label="常吃项">
           <div class="page-heading">
-            <span class="eyebrow">我的9餐库</span><h1>9套都能按你的习惯改</h1>
-            <p>点任意一套编辑名称、图标、食物搭配和减脂提醒。保存后，今天和历史里会同步显示新内容。</p>
+            <span class="eyebrow">我的常吃项</span><h1>9个位置都能自己改</h1>
+            <p>点任意一项编辑名称、图标、食物说明和一句提醒。可以写土豆、酸奶、鸡胸肉，也可以换成你常吃的东西。</p>
           </div>
           <div class="template-grid" id="templateGrid"></div>
 
@@ -103,13 +103,13 @@
             </div>
             <div class="week-bars" id="weekBars" aria-label="近七天完成情况"></div>
           </section>
-          <section class="history-section"><div class="section-heading compact"><div><span class="eyebrow">最近记录</span><h2>吃过哪几套</h2></div></div><div class="history-list" id="historyList"></div></section>
+          <section class="history-section"><div class="section-heading compact"><div><span class="eyebrow">最近记录</span><h2>吃过哪些食物</h2></div></div><div class="history-list" id="historyList"></div></section>
         </section>
       </main>
 
       <nav class="bottom-nav" aria-label="主导航">
         <button class="nav-item is-active" data-target="today" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4v-9.5Z" /><path d="M9 20v-6h6v6" /></svg><span>今天</span></button>
-        <button class="nav-item" data-target="library" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>9餐库</span></button>
+        <button class="nav-item" data-target="library" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>常吃项</span></button>
         <button class="nav-item" data-target="history" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10m7 10V4m7 16v-7" /></svg><span>记录</span></button>
       </nav>
     </div>
@@ -118,9 +118,9 @@
 
     <section class="bottom-sheet picker-sheet" id="pickerSheet" role="dialog" aria-modal="true" aria-labelledby="pickerTitle" hidden>
       <div class="sheet-handle" aria-hidden="true"></div>
-      <div class="sheet-header"><div><span class="eyebrow" id="pickerEyebrow">早餐 · 任选一套</span><h2 id="pickerTitle">今天想吃哪一套？</h2></div><button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button></div>
+      <div class="sheet-header"><div><span class="eyebrow" id="pickerEyebrow">早餐 · 选一个常吃项</span><h2 id="pickerTitle">这餐吃什么？</h2></div><button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button></div>
       <div class="picker-grid" id="pickerGrid"></div>
-      <p class="sheet-hint">可以重复选择；换餐后需要重新完成打卡。</p>
+      <p class="sheet-hint">可以重复选择；换食物后需要重新完成打卡。</p>
     </section>
 
     <section class="bottom-sheet record-sheet" id="recordSheet" role="dialog" aria-modal="true" aria-labelledby="recordTitle" hidden>
@@ -129,7 +129,7 @@
       <div class="selected-plan" id="selectedPlan"></div>
       <form id="recordForm">
         <label class="field-label" for="foodNote">实际吃了什么 <span>选填</span></label>
-        <textarea id="foodNote" rows="3" maxlength="160" placeholder="例如：鸡蛋、无糖豆浆、半根玉米"></textarea>
+        <textarea id="foodNote" rows="3" maxlength="160" placeholder="例如：蒸土豆、无糖酸奶、鸡胸肉"></textarea>
         <fieldset><legend>吃完有多饱？<span>凭感觉就好</span></legend><div class="satiety-scale" id="satietyScale">
           <button type="button" data-value="1"><b>1</b><span>还饿</span></button><button type="button" data-value="2"><b>2</b><span>不太饱</span></button><button type="button" data-value="3"><b>3</b><span>刚好</span></button><button type="button" data-value="4"><b>4</b><span>有点撑</span></button><button type="button" data-value="5"><b>5</b><span>很撑</span></button>
         </div></fieldset>
@@ -140,13 +140,13 @@
 
     <section class="bottom-sheet editor-sheet" id="editorSheet" role="dialog" aria-modal="true" aria-labelledby="editorTitle" hidden>
       <div class="sheet-handle" aria-hidden="true"></div>
-      <div class="sheet-header"><div><span class="eyebrow" id="editorEyebrow">编辑第1套</span><h2 id="editorTitle">自定义这套餐</h2></div><button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button></div>
+      <div class="sheet-header"><div><span class="eyebrow" id="editorEyebrow">编辑第1项</span><h2 id="editorTitle">自定义这个食物</h2></div><button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button></div>
       <form id="editorForm">
         <input id="templateIdInput" type="hidden" />
-        <div class="editor-first-row"><label><span>图标</span><input id="templateEmoji" maxlength="4" inputmode="text" aria-label="餐方案图标" /></label><label><span>方案名称</span><input id="templateName" maxlength="12" required aria-label="方案名称" /></label></div>
-        <label class="field-label" for="templateFoods">食物搭配</label><textarea id="templateFoods" rows="3" maxlength="80" required></textarea>
-        <label class="field-label" for="templateTip">减脂提醒</label><textarea id="templateTip" rows="2" maxlength="60" required></textarea>
-        <button class="primary-button full-button" type="submit">保存这套餐</button>
+        <div class="editor-first-row"><label><span>图标</span><input id="templateEmoji" maxlength="4" inputmode="text" aria-label="食物图标" /></label><label><span>食物名称</span><input id="templateName" maxlength="12" required aria-label="食物名称" /></label></div>
+        <label class="field-label" for="templateFoods">怎么吃</label><textarea id="templateFoods" rows="3" maxlength="80" required></textarea>
+        <label class="field-label" for="templateTip">一句提醒</label><textarea id="templateTip" rows="2" maxlength="60" required></textarea>
+        <button class="primary-button full-button" type="submit">保存这个食物</button>
       </form>
     </section>
 
