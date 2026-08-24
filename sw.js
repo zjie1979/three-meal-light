@@ -1,11 +1,11 @@
-const CACHE_NAME = "three-meal-light-v19-strawberry-300";
+const CACHE_NAME = "three-meal-light-v19-strawberry-300-nozoom-20260824";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./recipes.js",
-  "./manifest.webmanifest",
+  "./manifest.webmanifest?v=nozoom-20260824",
   "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
