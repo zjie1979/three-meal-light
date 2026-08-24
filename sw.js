@@ -1,9 +1,10 @@
-const CACHE_NAME = "three-meal-light-v8-fixed-viewport";
+const CACHE_NAME = "three-meal-light-v9-recipe-library";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./recipes.js",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",

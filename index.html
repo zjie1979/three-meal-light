@@ -93,6 +93,14 @@
           <p class="health-disclaimer">本工具用于日常习惯记录，不替代医生或营养师建议。如有孕期、进食障碍、糖尿病或其他特殊饮食管理需要，请遵循专业意见。</p>
         </section>
 
+        <section class="view" data-view="recipes" aria-label="食谱库">
+          <div class="page-heading"><span class="eyebrow">食谱库</span><h1>旧App食谱都在这里</h1><p>按来源和系列筛选，点食谱查看整理后的9格详情。</p></div>
+          <div class="recipe-source-tabs" id="recipeSourceTabs" aria-label="食谱来源"></div>
+          <div class="recipe-series-tabs" id="recipeSeriesTabs" aria-label="食谱系列"></div>
+          <div class="recipe-count" id="recipeCount"></div>
+          <div class="recipe-list" id="recipeList"></div>
+        </section>
+
         <section class="view" data-view="stats" aria-label="轮数统计">
           <div class="page-heading"><span class="eyebrow">统计</span><h1>看累计完成了几轮</h1><p>每打满9顿，自动记为完成1轮，并进入下一轮。</p></div>
           <section class="week-card stat-summary">
@@ -109,6 +117,7 @@
       <nav class="bottom-nav" aria-label="主导航">
         <button class="nav-item is-active" data-target="checkin" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 6" /><path d="M4 20h16" /></svg><span>打卡</span></button>
         <button class="nav-item" data-target="custom" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg><span>自定义</span></button>
+        <button class="nav-item" data-target="recipes" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h10a4 4 0 0 1 4 4v10H9a4 4 0 0 0-4-4V5Z"/><path d="M9 8h6M9 12h5" /></svg><span>食谱</span></button>
         <button class="nav-item" data-target="stats" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10m7 10V4m7 16v-7" /></svg><span>统计</span></button>
       </nav>
     </div>
@@ -134,9 +143,18 @@
       <button class="primary-button full-button" data-close-sheet type="button">我知道了</button>
     </section>
 
+    <section class="bottom-sheet recipe-sheet" id="recipeSheet" role="dialog" aria-modal="true" aria-labelledby="recipeSheetTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-header"><div><span class="eyebrow" id="recipeSheetSource">食谱详情</span><h2 id="recipeSheetTitle">9格详情</h2></div><button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button></div>
+      <p class="recipe-sheet-summary" id="recipeSheetSummary"></p>
+      <div class="recipe-nine-list" id="recipeNineList"></div>
+      <button class="primary-button full-button" id="applyRecipeButton" type="button">套用这套9顿</button>
+    </section>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <canvas id="celebrationCanvas" aria-hidden="true"></canvas>
     <noscript>请开启 JavaScript 后使用三餐九选。</noscript>
+    <script src="./recipes.js"></script>
     <script src="./app.js" defer></script>
   </body>
 </html>

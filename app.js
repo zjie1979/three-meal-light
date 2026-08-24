@@ -122,6 +122,9 @@
 
   let state = loadState();
   let activeTemplateId = null;
+  let activeRecipeSource = "";
+  let activeRecipeSeries = "";
+  let activeRecipeId = "";
   let installPrompt = null;
   let toastTimer = null;
 
@@ -153,9 +156,23 @@
     templateFoods: $("#templateFoods"),
     templateTip: $("#templateTip"),
     installSheet: $("#installSheet"),
+    recipeSourceTabs: $("#recipeSourceTabs"),
+    recipeSeriesTabs: $("#recipeSeriesTabs"),
+    recipeCount: $("#recipeCount"),
+    recipeList: $("#recipeList"),
+    recipeSheet: $("#recipeSheet"),
+    recipeSheetSource: $("#recipeSheetSource"),
+    recipeSheetTitle: $("#recipeSheetTitle"),
+    recipeSheetSummary: $("#recipeSheetSummary"),
+    recipeNineList: $("#recipeNineList"),
+    applyRecipeButton: $("#applyRecipeButton"),
     toast: $("#toast"),
     celebrationCanvas: $("#celebrationCanvas")
   };
+  const recipeLibrary = Array.isArray(window.RECIPE_LIBRARY) ? window.RECIPE_LIBRARY : [];
+  const recipeSources = [...new Map(recipeLibrary.map((recipe) => [recipe.sourceApp, recipe.sourceLabel])).entries()]
+    .map(([id, name]) => ({ id, name, count: recipeLibrary.filter((recipe) => recipe.sourceApp === id).length }));
+  activeRecipeSource = recipeSources[0]?.id || "";
 
   function normalizeTemplateItem(item, fallback) {
     return {
@@ -489,6 +506,7 @@
     $$(".view").forEach((view) => view.classList.toggle("is-active", view.dataset.view === target));
     $$(".nav-item").forEach((button) => button.classList.toggle("is-active", button.dataset.target === target));
     if (target === "custom") renderLibrary();
+    if (target === "recipes") renderRecipes();
     if (target === "stats") renderStats();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -502,8 +520,113 @@
 
   function closeSheets() {
     refs.sheetBackdrop.hidden = true;
-    [refs.editorSheet, refs.installSheet].forEach((sheet) => { sheet.hidden = true; });
+    [refs.editorSheet, refs.installSheet, refs.recipeSheet].forEach((sheet) => { sheet.hidden = true; });
     document.body.style.overflow = "";
+  }
+
+  function renderRecipes() {
+    if (!recipeLibrary.length) {
+      refs.recipeSourceTabs.innerHTML = "";
+      refs.recipeSeriesTabs.innerHTML = "";
+      refs.recipeCount.textContent = "";
+      refs.recipeList.innerHTML = '<div class="empty-state">还没有导入旧App食谱。</div>';
+      return;
+    }
+    if (!recipeSources.some((source) => source.id === activeRecipeSource)) activeRecipeSource = recipeSources[0].id;
+    const sourceRecipes = recipeLibrary.filter((recipe) => recipe.sourceApp === activeRecipeSource);
+    const seriesNames = [...new Set(sourceRecipes.map((recipe) => recipe.series || "其他"))];
+    if (!seriesNames.includes(activeRecipeSeries)) activeRecipeSeries = seriesNames[0] || "";
+    const visibleRecipes = sourceRecipes.filter((recipe) => (recipe.series || "其他") === activeRecipeSeries);
+
+    refs.recipeSourceTabs.innerHTML = recipeSources.map((source) => `
+      <button class="recipe-chip ${source.id === activeRecipeSource ? "is-active" : ""}" type="button" data-recipe-source="${source.id}">
+        ${escapeHtml(source.name)} ${source.count}
+      </button>`).join("");
+    refs.recipeSeriesTabs.innerHTML = seriesNames.map((series) => {
+      const count = sourceRecipes.filter((recipe) => (recipe.series || "其他") === series).length;
+      return `<button class="recipe-chip ${series === activeRecipeSeries ? "is-active" : ""}" type="button" data-recipe-series="${escapeHtml(series)}">${escapeHtml(series)} ${count}</button>`;
+    }).join("");
+    refs.recipeCount.textContent = `${recipeSources.find((source) => source.id === activeRecipeSource)?.name || ""} / ${activeRecipeSeries}：${visibleRecipes.length} 个食谱`;
+    refs.recipeList.innerHTML = visibleRecipes.map((recipe) => `
+      <button class="recipe-card" type="button" data-open-recipe="${recipe.id}">
+        <span>${escapeHtml(recipe.sourceLabel)} · ${escapeHtml(recipe.series)}</span>
+        <strong>${escapeHtml(recipe.title)}</strong>
+        <p>${escapeHtml(recipe.summary || recipe.fit || "点开查看整理后的9格详情。")}</p>
+      </button>`).join("");
+
+    $$("[data-recipe-source]", refs.recipeSourceTabs).forEach((button) => button.addEventListener("click", () => {
+      activeRecipeSource = button.dataset.recipeSource;
+      activeRecipeSeries = "";
+      renderRecipes();
+    }));
+    $$("[data-recipe-series]", refs.recipeSeriesTabs).forEach((button) => button.addEventListener("click", () => {
+      activeRecipeSeries = button.dataset.recipeSeries;
+      renderRecipes();
+    }));
+    $$("[data-open-recipe]", refs.recipeList).forEach((button) => button.addEventListener("click", () => openRecipe(button.dataset.openRecipe)));
+  }
+
+  function recipeToNine(recipe) {
+    const sourceItems = [
+      ...recipe.meals.map((meal) => ({
+        slot: meal.slot || "餐次",
+        food: meal.food,
+        tip: meal.tag || recipe.series || recipe.sourceLabel
+      })),
+      ...recipe.rules.map((rule, index) => ({
+        slot: `规则${index + 1}`,
+        food: rule,
+        tip: "按原食谱规则执行"
+      }))
+    ].filter((item) => item.food);
+    const fallbackTips = [
+      "未写额外食物，不主动加餐。",
+      "饿、头晕或不舒服时停止硬跟。",
+      "饮水按口渴和身体状态来。",
+      "当天不叠加甜品、奶茶和夜宵。",
+      "这格用于提醒，不是新增食物。"
+    ];
+    while (sourceItems.length < 9) {
+      sourceItems.push({
+        slot: "提醒",
+        food: fallbackTips[(sourceItems.length - recipe.meals.length) % fallbackTips.length],
+        tip: "补足9格，便于打卡"
+      });
+    }
+    return sourceItems.slice(0, 9).map((item, index) => ({
+      emoji: index < 3 ? "🍽️" : index < 6 ? "🥗" : "✅",
+      name: String(item.slot || `第${index + 1}顿`).slice(0, 12),
+      foods: String(item.food || "").slice(0, 80),
+      tip: String(item.tip || recipe.title || "").slice(0, 60),
+      fullFood: String(item.food || "")
+    }));
+  }
+
+  function openRecipe(recipeId) {
+    const recipe = recipeLibrary.find((item) => item.id === recipeId);
+    if (!recipe) return;
+    activeRecipeId = recipe.id;
+    const nine = recipeToNine(recipe);
+    refs.recipeSheetSource.textContent = `${recipe.sourceLabel} · ${recipe.series}`;
+    refs.recipeSheetTitle.textContent = recipe.title;
+    refs.recipeSheetSummary.textContent = recipe.summary || recipe.fit || "已整理成9格，方便查看和套用。";
+    refs.recipeNineList.innerHTML = nine.map((item, index) => `
+      <article class="recipe-nine-item">
+        <b>${index + 1}</b>
+        <div><strong>${escapeHtml(item.name)}</strong><p>${escapeHtml(item.fullFood || item.foods)}</p></div>
+      </article>`).join("");
+    showSheet(refs.recipeSheet);
+  }
+
+  function applyActiveRecipe() {
+    const recipe = recipeLibrary.find((item) => item.id === activeRecipeId);
+    if (!recipe) return;
+    if (!window.confirm(`确定把当前9顿替换成「${recipe.title}」吗？\n\n只替换卡片内容，不会清空已完成轮数。`)) return;
+    applyTemplates(recipeToNine(recipe));
+    saveState();
+    closeSheets();
+    renderAll();
+    showToast(`已套用：${recipe.title}`);
   }
 
   function showToast(message) {
@@ -680,6 +803,7 @@
     refs.exportTemplatesButton.addEventListener("click", exportTemplates);
     refs.importTemplatesButton.addEventListener("click", openTemplateImport);
     refs.importTemplatesInput.addEventListener("change", importTemplatesFromFile);
+    refs.applyRecipeButton.addEventListener("click", applyActiveRecipe);
     $("#exportButton").addEventListener("click", exportData);
     $("#resetButton").addEventListener("click", resetAllData);
     $("#installButton").addEventListener("click", openInstallFlow);
