@@ -5,18 +5,29 @@
   const CUSTOM_PRESET_LIMIT = 12;
   const DEFAULT_TEMPLATES = [
     { id: "meal-1", emoji: "🥔", name: "土豆", foods: "蒸土豆、烤土豆或少油土豆块", tip: "当主食吃，别再叠加太多米饭面条。" },
-    { id: "meal-2", emoji: "🥣", name: "无糖酸奶", foods: "无糖酸奶，可以加少量水果或燕麦", tip: "优先选无糖，太甜的酸奶按甜品看。" },
+    { id: "meal-2", emoji: "🥣", name: "酸奶+燕麦", foods: "无糖酸奶，可以加少量水果或燕麦", tip: "优先选无糖，太甜的酸奶按甜品看。" },
     { id: "meal-3", emoji: "🐔", name: "鸡胸肉", foods: "鸡胸肉、鸡腿去皮或低油鸡肉", tip: "蛋白质够了，饱腹会更稳。" },
-    { id: "meal-4", emoji: "🥚", name: "鸡蛋", foods: "水煮蛋、蒸蛋或少油煎蛋", tip: "简单好执行，一餐配1到2个就够用。" },
+    { id: "meal-4", emoji: "🥚", name: "豆腐干", foods: "水煮蛋、蒸蛋或少油煎蛋", tip: "简单好执行，一餐配1到2个就够用。" },
     { id: "meal-5", emoji: "🌽", name: "玉米红薯", foods: "玉米、红薯、南瓜等粗粮主食", tip: "这类也算主食，份量适中就行。" },
-    { id: "meal-6", emoji: "🥬", name: "蔬菜", foods: "青菜、番茄、黄瓜、菌菇等", tip: "用来补体积和饱腹，不要只吃菜。" },
+    { id: "meal-6", emoji: "🥬", name: "蔬菜沙拉/汁", foods: "青菜、番茄、黄瓜、菌菇等", tip: "用来补体积和饱腹，不要只吃菜。" },
     { id: "meal-7", emoji: "🐟", name: "鱼虾牛肉", foods: "鱼、虾、瘦牛肉或豆腐", tip: "换着吃，别把一餐弄得太复杂。" },
-    { id: "meal-8", emoji: "🍎", name: "水果", foods: "苹果、橙子、莓果等一小份水果", tip: "完整水果可以，果汁不算。" },
-    { id: "meal-9", emoji: "🍚", name: "正常饭菜", foods: "正常吃一小份饭菜，少油少汤", tip: "外食时就选这一项，吃到七八分饱。" }
+    { id: "meal-8", emoji: "🥖", name: "馒头/面包", foods: "苹果、橙子、莓果等一小份水果", tip: "完整水果可以，果汁不算。" },
+    { id: "meal-9", emoji: "🍚", name: "香蕉", foods: "正常吃一小份饭菜，少油少汤", tip: "外食时就选这一项，吃到七八分饱。" }
   ];
   const LEGACY_DEFAULT_TEMPLATE_NAMES = [
     "控糖早餐", "高蛋白早餐", "轻食早餐", "家常均衡餐", "清爽蒸煮餐",
     "外卖减负餐", "面食搭配餐", "火锅聪明餐", "自由满足餐"
+  ];
+  const PREVIOUS_DEFAULT_TEMPLATES = [
+    { name: "土豆", foods: "蒸土豆、烤土豆或少油土豆块" },
+    { name: "无糖酸奶", foods: "无糖酸奶，可以加少量水果或燕麦" },
+    { name: "鸡胸肉", foods: "鸡胸肉、鸡腿去皮或低油鸡肉" },
+    { name: "鸡蛋", foods: "水煮蛋、蒸蛋或少油煎蛋" },
+    { name: "玉米红薯", foods: "玉米、红薯、南瓜等粗粮主食" },
+    { name: "蔬菜", foods: "青菜、番茄、黄瓜、菌菇等" },
+    { name: "鱼虾牛肉", foods: "鱼、虾、瘦牛肉或豆腐" },
+    { name: "水果", foods: "苹果、橙子、莓果等一小份水果" },
+    { name: "正常饭菜", foods: "正常吃一小份饭菜，少油少汤" }
   ];
   const PRESET_SETS = [
     {
@@ -189,7 +200,9 @@
       const saved = Array.isArray(savedTemplates)
         ? savedTemplates.find((item) => item?.id === fallback.id) || savedTemplates[index]
         : null;
-      const wasLegacyDefault = !saved || LEGACY_DEFAULT_TEMPLATE_NAMES.includes(saved.name);
+      const previous = PREVIOUS_DEFAULT_TEMPLATES[index];
+      const wasPreviousDefault = previous && saved?.name === previous.name && saved?.foods === previous.foods;
+      const wasLegacyDefault = !saved || LEGACY_DEFAULT_TEMPLATE_NAMES.includes(saved.name) || wasPreviousDefault;
       const source = wasLegacyDefault ? fallback : { ...fallback, ...saved };
       return normalizeTemplateItem(source, fallback);
     });
